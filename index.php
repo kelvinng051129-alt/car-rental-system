@@ -18,7 +18,7 @@ error_reporting(0);
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            height: 80vh; /* 占据 80% 屏幕高度 */
+            height: 80vh; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -63,8 +63,6 @@ error_reporting(0);
             <div class="row g-4">
                 
                 <?php 
-                // SQL Query: Fetch top 3 latest vehicles
-                // 注意：这里我假设你数据库里有 Vimage1 这个字段，如果没有，图片会显示不出来
                 $sql = "SELECT tblvehicles.VehiclesTitle,tblbrands.BrandName,tblvehicles.PricePerDay,tblvehicles.FuelType,tblvehicles.ModelYear,tblvehicles.id,tblvehicles.SeatingCapacity,tblvehicles.Vimage1 from tblvehicles join tblbrands on tblbrands.id=tblvehicles.VehiclesBrand order by tblvehicles.id desc limit 3";
                 $query = $dbh -> prepare($sql);
                 $query->execute();
