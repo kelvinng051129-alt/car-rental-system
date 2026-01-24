@@ -2,13 +2,17 @@
 session_start();
 include('../includes/config.php');
 
+// Initialize variables
+$error_msg = ""; 
+$login_success = false;
+
 // --- Login Logic ---
 if(isset($_POST['login']))
 {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // 1. Check if username exists in the database
+    // 1. Check if username exists
     $sql = "SELECT UserName, Password FROM admin WHERE UserName=:username";
     $query = $dbh->prepare($sql);
     $query->bindParam(':username', $username, PDO::PARAM_STR);
@@ -18,23 +22,23 @@ if(isset($_POST['login']))
     // 2. If username is found
     if($query->rowCount() > 0)
     {
-        // 3. Verify the password (compare input password with stored Hash)
+        // 3. Verify Password
         if(password_verify($password, $results->Password)) 
         {
-            // Login Successful
+            // ✅ Success
             $_SESSION['alogin'] = $_POST['username'];
-            echo "<script type='text/javascript'> document.location = 'dashboard.php'; </script>";
+            $login_success = true; 
         } 
         else 
         {
-            // Password Incorrect
-            echo "<script>alert('Invalid Password');</script>";
+            // ❌ Error: Incorrect Password
+            $error_msg = "Incorrect Password. Please try again.";
         }
     } 
     else 
     {
-        // Username Not Found
-        echo "<script>alert('Invalid Username');</script>";
+        // ❌ Error: Invalid Username
+        $error_msg = "Invalid Username. Account does not exist.";
     }
 }
 ?>
@@ -47,10 +51,11 @@ if(isset($_POST['login']))
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     <style>
         body {
-            /* Mercedes-Benz AMG Style Background */
+            /* Background Image */
             background: linear-gradient(rgba(10, 10, 15, 0.8), rgba(10, 10, 15, 0.9)), url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
@@ -59,6 +64,10 @@ if(isset($_POST['login']))
             align-items: center;
             justify-content: center;
             font-family: 'Poppins', sans-serif;
+            
+            /* 🔧 FIX: Prevent scrollbars and jumping */
+            overflow: hidden; 
+            margin: 0;
         }
 
         .login-card {
@@ -87,20 +96,17 @@ if(isset($_POST['login']))
         .brand-logo { font-size: 3rem; color: #2c3e50; margin-bottom: 10px; }
         .login-title { color: #333; font-weight: 700; margin-bottom: 30px; font-size: 1.6rem; letter-spacing: -0.5px; }
 
-        /* Input Fields Styling */
         .input-group-text { background: #f0f2f5; border-right: none; color: #6c757d; border-color: #e9ecef; }
         .form-control { border-left: none; background: #f0f2f5; padding: 12px; font-size: 0.95rem; border-color: #e9ecef; color: #495057; }
         .form-control:focus { box-shadow: none; border-color: #f1c40f; background: #fff; }
         .input-group:focus-within .input-group-text { background: #fff; color: #f1c40f; border-color: #f1c40f; }
 
-        /* Login Button Styling */
         .btn-login { background-color: #2c3e50; color: white; font-weight: 600; padding: 12px; border-radius: 8px; border: none; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
         .btn-login:hover { background-color: #f1c40f; color: #2c3e50; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4); }
 
         .back-link { display: block; margin-top: 25px; color: #999; text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
         .back-link:hover { color: #f1c40f; }
         
-        /* Forgot Password Link Styling */
         .forgot-link { color: #6c757d; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
         .forgot-link:hover { color: #f1c40f; }
     </style>
@@ -135,6 +141,36 @@ if(isset($_POST['login']))
             <i class="fa fa-arrow-left"></i> Back to Homepage
         </a>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <?php if($login_success) { ?>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Welcome Back!',
+            text: 'Login successful. Redirecting to dashboard...',
+            timer: 2000,
+            showConfirmButton: false,
+            heightAuto: false // 🔧 FIX: Prevents screen from jumping
+        }).then(() => {
+            window.location = 'dashboard.php';
+        });
+    </script>
+    <?php } ?>
+
+    <?php if($error_msg != "") { ?>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Access Denied',
+            text: '<?php echo $error_msg; ?>',
+            confirmButtonColor: '#2c3e50',
+            confirmButtonText: 'Try Again',
+            heightAuto: false // 🔧 FIX: Prevents screen from jumping
+        });
+    </script>
+    <?php } ?>
 
 </body>
 </html>

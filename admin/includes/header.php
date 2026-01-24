@@ -1,11 +1,9 @@
 <style>
-    body {
-        padding-top: 0 !important;
-    }
-    .container {
-        margin-top: 30px; 
-    }
+    body { padding-top: 0 !important; }
+    .container { margin-top: 30px; }
 </style>
+
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2c3e50; padding: 15px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
   <div class="container">
@@ -66,7 +64,13 @@
             <ul class="dropdown-menu dropdown-menu-end">
               <li><a class="dropdown-item" href="change-password.php">Change Password</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
+              
+              <li>
+                  <a class="dropdown-item text-danger" href="#" onclick="confirmLogout(event)">
+                      Logout
+                  </a>
+              </li>
+
             </ul>
           </div>
         </li>
@@ -77,23 +81,35 @@
 </nav>
 
 <style>
-  .navbar-nav .nav-link {
-    font-size: 0.95rem;
-    margin-left: 10px;
-    transition: 0.3s;
-    color: rgba(255,255,255,0.8);
-  }
-  .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
-    color: #f1c40f !important; /* Yellow Hover */
-    transform: translateY(-2px);
-  }
-  .dropdown-menu {
-    border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    border-radius: 8px;
-  }
-  .dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #2c3e50;
-  }
+  .navbar-nav .nav-link { font-size: 0.95rem; margin-left: 10px; transition: 0.3s; color: rgba(255,255,255,0.8); }
+  .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: #f1c40f !important; transform: translateY(-2px); }
+  .dropdown-menu { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 8px; }
+  .dropdown-item:hover { background-color: #f8f9fa; color: #2c3e50; }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function confirmLogout(e) {
+        // Prevent the default link behavior (immediate redirection)
+        e.preventDefault();
+
+        // Show SweetAlert Confirmation Dialog
+        Swal.fire({
+            title: 'Ready to Leave?',
+            text: "You will be logged out of the system.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545', // Red for Logout
+            cancelButtonColor: '#2c3e50',  // Dark for Cancel
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Cancel',
+            heightAuto: false // Prevents page jumping
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to logout.php if user confirms
+                window.location.href = 'logout.php';
+            }
+        });
+    }
+</script>
