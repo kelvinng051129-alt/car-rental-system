@@ -37,4 +37,4 @@
   </div>
 </nav>
 
-<style> body { padding-top: 70px; } </style>
+<style> body { padding-top: 60px; } </style>

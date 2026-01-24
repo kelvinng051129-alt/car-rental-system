@@ -18,7 +18,7 @@ error_reporting(0);
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            height: 80vh; 
+            height: 90vh; 
             display: flex;
             align-items: center;
             justify-content: center;
