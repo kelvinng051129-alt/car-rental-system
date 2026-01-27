@@ -1,3 +1,12 @@
+<?php
+// Put this at the top of header.php (before HTML)
+$currentPage = basename($_SERVER['PHP_SELF']); // e.g. index.php, about.php
+
+function navActive($page, $currentPage) {
+  return ($page === $currentPage) ? 'active' : '';
+}
+?>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
   <div class="container">
     <a class="navbar-brand fw-bold" href="index.php" style="font-size: 1.5rem; color: #f1c40f;">
@@ -10,31 +19,60 @@
 
     <div class="collapse navbar-collapse" id="userNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item"><a class="nav-link active" href="index.php">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="car-listing.php">Find a Car</a></li>
-        <li class="nav-item"><a class="nav-link" href="about.php">About Us </a></li>
-        <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-        
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('index.php', $currentPage); ?>" href="index.php">Home</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('car-listing.php', $currentPage); ?>" href="car-listing.php">Find a Car</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('about.php', $currentPage); ?>" href="about.php">About Us</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('contact.php', $currentPage); ?>" href="contact.php">Contact Us</a>
+        </li>
+
         <?php if(strlen($_SESSION['login'])==0) { ?>
-            <li class="nav-item ms-3">
-                <a class="btn btn-outline-warning btn-sm" href="login.php">Login / Register</a>
-            </li>
+          <li class="nav-item ms-3">
+            <a class="btn btn-outline-warning btn-sm" href="login.php">Login / Register</a>
+          </li>
         <?php } else { ?>
-            <li class="nav-item ms-3 dropdown">
-                <a class="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="fa fa-user-circle"></i> <?php echo htmlentities($_SESSION['fname']);?>
+          <li class="nav-item ms-3 dropdown">
+            <a class="nav-link dropdown-toggle text-warning <?php echo (in_array($currentPage, ['my-booking.php','profile.php'])) ? 'active' : ''; ?>"
+               href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fa fa-user-circle"></i> <?php echo htmlentities($_SESSION['fname']);?>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item <?php echo navActive('my-booking.php', $currentPage); ?>" href="my-booking.php">
+                  My Bookings
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="my-booking.php">My Bookings</a></li>
-                    <li><a class="dropdown-item" href="profile.php">Profile Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
-                </ul>
-            </li>
+              </li>
+              <li>
+                <a class="dropdown-item <?php echo navActive('profile.php', $currentPage); ?>" href="profile.php">
+                  Profile Settings
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="logout.php">Logout</a></li>
+            </ul>
+          </li>
         <?php } ?>
       </ul>
     </div>
   </div>
 </nav>
 
-<style> body { padding-top: 60px; } </style>
+<style>
+  body { padding-top: 60px; }
+
+  /* Optional: make dropdown active look nice (Bootstrap default active may be subtle) */
+  .navbar .nav-link.active {
+    color: #f1c40f !important;
+    font-weight: 700;
+  }
+</style>
+<?php
