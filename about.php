@@ -45,6 +45,7 @@ error_reporting(0);
         letter-spacing: 2px;
         text-shadow: 0 10px 30px rgba(0,0,0,0.8);
         margin-bottom: 15px;
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 1, 0.2, 1);
     }
 
     .hero-subtitle {
@@ -54,6 +55,7 @@ error_reporting(0);
         letter-spacing: 3px;
         text-transform: uppercase;
         font-weight: 500;
+        animation: fadeInUp 1.2s cubic-bezier(0.2, 1, 0.2, 1);
     }
 
     .accent-line {
@@ -207,6 +209,11 @@ error_reporting(0);
     code {
         color: #d4af37;
     }
+
+    @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 </style>
 
 </head>
