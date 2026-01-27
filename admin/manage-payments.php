@@ -3,24 +3,24 @@ session_start();
 error_reporting(0);
 include('../includes/config.php');
 
-// Security Check
 if(strlen($_SESSION['alogin'])==0)
 {   
     header('location:index.php');
 }
 else{
-
-    // --- Action: Mark as Paid ---
-    if(isset($_GET['pay_id']))
+    // ---"Mark as Paid"---
+    if(isset($_REQUEST['eid']))
     {
-        $pid = intval($_GET['pay_id']);
-        $sql = "UPDATE tblbooking SET payment_status=1 WHERE id=:pid";
+        $eid=intval($_GET['eid']);
+        $status=1; // 1 = Paid
+        $sql = "UPDATE tblbooking SET payment_status=:status WHERE id=:eid";
         $query = $dbh->prepare($sql);
-        $query->bindParam(':pid',$pid, PDO::PARAM_STR);
-        $query->execute();
-        $msg = "Payment Marked Successfully!";
+        $query -> bindParam(':status',$status, PDO::PARAM_STR);
+        $query-> bindParam(':eid',$eid, PDO::PARAM_STR);
+        $query -> execute();
+        $msg="Payment Successfully Updated";
     }
- ?>
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -29,116 +29,153 @@ else{
     <title>Admin | Manage Payments</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+
     <style>
-        body { background-color: #f5f7fa; font-family: 'Segoe UI', sans-serif; padding-top: 100px; }
-        .table-card {
-            background: white; border-radius: 12px; padding: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05); border-top: 4px solid #27ae60; /* Green for Money */
+        body { background-color: #f5f7fa; font-family: 'Segoe UI', sans-serif; padding-top: 80px; }
+        .page-header { border-left: 5px solid #27ae60; padding-left: 15px; margin-bottom: 30px; }
+        .page-header h2 { font-weight: 800; color: #2c3e50; margin: 0; }
+        
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header-custom { background-color: #2c3e50; color: white; padding: 15px 20px; font-weight: 600; }
+        
+        .table-custom th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #7f8c8d; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        .table-custom td { vertical-align: middle; color: #2c3e50; font-size: 0.95rem; }
+        
+        .badge-unpaid { background-color: #f8d7da; color: #721c24; padding: 8px 12px; border-radius: 6px; font-weight: 600; }
+        .badge-paid { background-color: #d4edda; color: #155724; padding: 8px 12px; border-radius: 6px; font-weight: 600; }
+        
+        .btn-mark-paid { 
+            background-color: #198754; color: white; border: none; padding: 6px 15px; 
+            border-radius: 5px; font-size: 0.85rem; transition: 0.3s; 
         }
-        .page-header h2 { font-weight: 700; color: #2c3e50; }
-        .text-price { color: #27ae60; font-weight: bold; font-size: 1.1rem; }
+        .btn-mark-paid:hover { background-color: #157347; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2); }
+        
+        .days-badge { background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; color: #495057; }
+        .total-price { font-weight: 700; color: #2c3e50; }
     </style>
 </head>
 <body>
 
     <?php include('includes/header.php');?>
 
-    <div class="container">
+    <div class="container-fluid px-4">
         
-        <div class="page-header mb-4">
-            <h2><i class="fa fa-file-invoice-dollar"></i> Manage Payments</h2>
+        <div class="page-header">
+            <h2>Manage Payments</h2>
         </div>
 
-        <?php if(isset($msg)){ ?>
-            <div class="alert alert-success alert-dismissible fade show">
-                <i class="fa fa-check-circle"></i> <?php echo $msg; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <?php if($msg){ ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="fa fa-check-circle me-2"></i> <?php echo htmlentities($msg); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php } ?>
 
-        <div class="table-card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Customer</th>
-                            <th>Vehicle</th>
-                            <th>Dates</th>
-                            <th>Total Days</th>
-                            <th>Price/Day</th>
-                            <th>Est. Total</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                    <?php 
-                    // SQL: Calculate total days and display total price
-                    // DATEDIFF(ToDate, FromDate) is used to calculate the rental duration
-                    $sql = "SELECT tblusers.FullName,tblbrands.BrandName,tblvehicles.VehiclesTitle,tblvehicles.PricePerDay,tblbooking.FromDate,tblbooking.ToDate,tblbooking.id,tblbooking.payment_status, DATEDIFF(tblbooking.ToDate, tblbooking.FromDate) as totaldays 
-                            FROM tblbooking 
-                            JOIN tblusers ON tblusers.EmailId=tblbooking.userEmail 
-                            JOIN tblvehicles ON tblvehicles.id=tblbooking.VehicleId 
-                            JOIN tblbrands ON tblvehicles.VehiclesBrand=tblbrands.id
-                            ORDER BY tblbooking.id DESC";
-                    
-                    $query = $dbh -> prepare($sql);
-                    $query->execute();
-                    $results=$query->fetchAll(PDO::FETCH_OBJ);
-                    $cnt=1;
-                    
-                    if($query->rowCount() > 0)
-                    {
-                        foreach($results as $result)
-                        { 
-                            // Prevent days from being 0 (e.g., same day pickup and return counts as 1 day)
-                            $days = ($result->totaldays == 0) ? 1 : $result->totaldays;
-                            $total_price = $days * $result->PricePerDay;
-                        ?>    
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <i class="fa fa-money-bill-wave me-2"></i> Payments List
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom mb-0">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlentities($cnt);?></td>
-                                <td><?php echo htmlentities($result->FullName);?></td>
-                                <td><?php echo htmlentities($result->BrandName);?> <?php echo htmlentities($result->VehiclesTitle);?></td>
-                                <td>
-                                    <small><?php echo htmlentities($result->FromDate);?></small><br>
-                                    <small><?php echo htmlentities($result->ToDate);?></small>
-                                </td>
-                                <td><span class="badge bg-info text-dark"><?php echo htmlentities($days);?> Days</span></td>
-                                <td>RM <?php echo htmlentities($result->PricePerDay);?></td>
-                                <td class="text-price">RM <?php echo number_format($total_price, 2);?></td>
-                                
-                                <td>
-                                    <?php if($result->payment_status == 1) { ?>
-                                        <span class="badge bg-success"><i class="fa fa-check"></i> Paid</span>
-                                    <?php } else { ?>
-                                        <span class="badge bg-danger">Unpaid</span>
-                                    <?php } ?>
-                                </td>
-                                
-                                <td>
-                                    <?php if($result->payment_status == 0) { ?>
-                                        <a href="manage-payments.php?pay_id=<?php echo $result->id;?>" onclick="return confirm('Confirm payment received?')" class="btn btn-outline-success btn-sm">
-                                            <i class="fa fa-dollar-sign"></i> Mark Paid
-                                        </a>
-                                    <?php } else { ?>
-                                        <span class="text-muted"><i class="fa fa-lock"></i> Closed</span>
-                                    <?php } ?>
-                                </td>
+                                <th width="5%">#</th>
+                                <th width="15%">Customer</th>
+                                <th width="20%">Vehicle</th>
+                                <th width="15%">Dates</th>
+                                <th width="10%">Total Days</th>
+                                <th width="10%">Price/Day</th>
+                                <th width="10%">Est. Total</th>
+                                <th width="8%">Status</th>
+                                <th width="7%" class="text-center">Action</th>
                             </tr>
-                        <?php $cnt=$cnt+1; }} else { ?>
-                            <tr><td colspan="9" class="text-center text-muted">No records found.</td></tr>
-                        <?php } ?>
-                        
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            // Join Booking + Users + Vehicles + Brands
+                            $sql = "SELECT tblusers.FullName,tblvehicles.VehiclesTitle,tblvehicles.PricePerDay,tblbrands.BrandName,tblbooking.FromDate,tblbooking.ToDate,tblbooking.payment_status,tblbooking.id from tblbooking join tblvehicles on tblvehicles.id=tblbooking.VehicleId join tblusers on tblusers.EmailId=tblbooking.userEmail join tblbrands on tblvehicles.VehiclesBrand=tblbrands.id order by tblbooking.id desc";
+                            $query = $dbh -> prepare($sql);
+                            $query->execute();
+                            $results=$query->fetchAll(PDO::FETCH_OBJ);
+                            $cnt=1;
+                            
+                            if($query->rowCount() > 0) {
+                                foreach($results as $result) { 
+                                    // --- 自动计算天数和总价 ---
+                                    $fdate = strtotime($result->FromDate);
+                                    $tdate = strtotime($result->ToDate);
+                                    $datediff = $tdate - $fdate;
+                                    $days = round($datediff / (60 * 60 * 24)); // Calculate days
+                                    if($days == 0) { $days = 1; } // Minimum 1 day
+                                    
+                                    $total_price = $days * ($result->PricePerDay);
+                            ?>
+                                <tr>
+                                    <td><?php echo htmlentities($cnt);?></td>
+                                    <td><strong><?php echo htmlentities($result->FullName);?></strong></td>
+                                    <td><?php echo htmlentities($result->BrandName);?> <?php echo htmlentities($result->VehiclesTitle);?></td>
+                                    <td>
+                                        <small class="text-muted"><?php echo htmlentities($result->FromDate);?></small><br>
+                                        <small class="text-muted"><?php echo htmlentities($result->ToDate);?></small>
+                                    </td>
+                                    <td><span class="days-badge"><?php echo htmlentities($days);?> Days</span></td>
+                                    <td>RM <?php echo htmlentities($result->PricePerDay);?></td>
+                                    <td class="total-price">RM <?php echo number_format($total_price, 2);?></td>
+                                    
+                                    <td>
+                                        <?php if($result->payment_status == 1) { ?>
+                                            <span class="badge-paid">Paid</span>
+                                        <?php } else { ?>
+                                            <span class="badge-unpaid">Unpaid</span>
+                                        <?php } ?>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <?php if($result->payment_status == 0) { ?>
+                                            <a href="manage-payments.php?eid=<?php echo htmlentities($result->id);?>" 
+                                               onclick="return confirmPayment(event, this.href)" 
+                                               class="btn-mark-paid">
+                                               <i class="fa fa-dollar-sign"></i> Mark Paid
+                                            </a>
+                                        <?php } else { ?>
+                                            <span class="text-muted small"><i class="fa fa-check"></i> Done</span>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php $cnt=$cnt+1; }} ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // SweetAlert2 Logic for Payment Confirmation
+        function confirmPayment(e, url) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Confirm Payment?',
+                text: 'Are you sure you have received the payment for this booking?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#27ae60', // Green button
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Mark as Paid!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 <?php } ?>
