@@ -10,17 +10,18 @@ if (isset($_SESSION['login']) && strlen($_SESSION['login']) > 0) {
 }
 
 $errMsg = '';
-$successMsg = '';
+$registerSuccess = false;
+$successName = '';
 
 if (isset($_POST['register'])) {
 
-    $fullname = trim($_POST['fullname']);
-    $email    = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $cpass    = trim($_POST['confirm_password']);
-    $contact  = trim($_POST['contact']);
-    $address  = trim($_POST['address']);
-    $city     = trim($_POST['city']);
+    $fullname = trim($_POST['fullname'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $cpass    = trim($_POST['confirm_password'] ?? '');
+    $contact  = trim($_POST['contact'] ?? '');
+    $address  = trim($_POST['address'] ?? '');
+    $city     = trim($_POST['city'] ?? '');
 
     // Basic validation
     if ($fullname === '' || $email === '' || $password === '' || $cpass === '' || $contact === '' || $address === '' || $city === '') {
@@ -61,11 +62,9 @@ if (isset($_POST['register'])) {
             $lastInsertId = $dbh->lastInsertId();
 
             if ($lastInsertId) {
-                echo "<script>
-                    alert('Account created successfully! Please login.');
-                    window.location.href='login.php';
-                </script>";
-                exit;
+                // Trigger SweetAlert AFTER page loads
+                $registerSuccess = true;
+                $successName = $fullname;
             } else {
                 $errMsg = "Something went wrong. Please try again.";
             }
@@ -87,6 +86,10 @@ if (isset($_POST['register'])) {
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     body{
@@ -308,6 +311,22 @@ if (isset($_POST['register'])) {
 </div>
 
 <?php include('includes/footer.php'); ?>
+
+<!-- SweetAlert success AFTER page loaded -->
+<?php if($registerSuccess) { ?>
+<script>
+  Swal.fire({
+      icon: 'success',
+      title: 'Account Created',
+      text: 'Hi <?php echo addslashes($successName); ?>, please login to continue.',
+      timer: 1600,
+      showConfirmButton: false,
+      heightAuto: false
+  }).then(() => {
+      window.location.href = 'login.php';
+  });
+</script>
+<?php } ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

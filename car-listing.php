@@ -329,7 +329,7 @@ error_reporting(0);
 
                 if($query->rowCount() > 0) {
                     foreach($results as $result) { ?>
-                    
+                    <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
                     <div class="col-lg-4 col-md-6">
                         <div class="card car-card h-100">
                             <div class="img-wrapper">
@@ -350,9 +350,9 @@ error_reporting(0);
                                     <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
                                 </div>
 
-                                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                                 <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
                                     View Details <i class="fa fa-arrow-right"></i>
-                                </a>
+                    </a>
                             </div>
                         </div>
                     </div>

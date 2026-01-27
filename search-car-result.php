@@ -215,7 +215,7 @@ error_reporting(0);
                 // Receive inputs from car-listing.php
                 $brand = $_POST['brand'];
                 $fueltype = $_POST['fueltype'];
-                // 🔥 Logic Fix Included (VehicleType)
+                // Logic Fix Included (VehicleType)
                 $vehicletype = $_POST['vehicletype'];
 
                 // Start building the query
@@ -236,7 +236,7 @@ error_reporting(0);
                     $params[':fueltype'] = $fueltype;
                 }
 
-                // 3. 🔥 Filter by Vehicle Type (Ignore if 'All Types')
+                // 3. Filter by Vehicle Type (Ignore if 'All Types')
                 if ($vehicletype != "All Types" && $vehicletype != "") {
                     $conditions[] = "tblvehicles.VehicleType = :vehicletype";
                     $params[':vehicletype'] = $vehicletype;

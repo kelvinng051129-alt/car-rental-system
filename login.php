@@ -10,10 +10,12 @@ if (isset($_SESSION['login']) && strlen($_SESSION['login']) > 0) {
 }
 
 $errMsg = '';
+$loginSuccess = false;
+$welcomeName = '';
 
 if (isset($_POST['login'])) {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
     if ($email === '' || $password === '') {
         $errMsg = "Please enter your email and password.";
@@ -29,15 +31,12 @@ if (isset($_POST['login'])) {
 
             // Verify hashed password (bcrypt / password_hash)
             if (password_verify($password, $user->Password)) {
-                // set sessions used by your header + booking checks
                 $_SESSION['login'] = $user->EmailId;
                 $_SESSION['fname'] = $user->FullName;
 
-                echo "<script>
-                    alert('Login successful!');
-                    window.location.href='index.php';
-                </script>";
-                exit;
+                // Trigger SweetAlert AFTER page loads (no white screen)
+                $loginSuccess = true;
+                $welcomeName = $user->FullName;
             } else {
                 $errMsg = "Invalid email or password.";
             }
@@ -61,6 +60,10 @@ if (isset($_POST['login'])) {
 
   <!-- Fonts (match index/about/contact) -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     body{
@@ -238,6 +241,22 @@ if (isset($_POST['login'])) {
 </div>
 
 <?php include('includes/footer.php'); ?>
+
+<!-- SweetAlert success AFTER page loaded -->
+<?php if($loginSuccess) { ?>
+<script>
+  Swal.fire({
+      icon: 'success',
+      title: 'Login Successful',
+      text: 'Welcome back, <?php echo addslashes($welcomeName); ?>!',
+      timer: 1500,
+      showConfirmButton: false,
+      heightAuto: false
+  }).then(() => {
+      window.location.href = 'index.php';
+  });
+</script>
+<?php } ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
