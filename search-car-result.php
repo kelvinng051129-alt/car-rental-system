@@ -197,29 +197,33 @@ error_reporting(0);
                     foreach($results as $result)
                     {  
                 ?>
-                <div class="col-lg-4 col-md-6">
-                    <div class="car-card">
-                        <div class="img-wrapper">
-                            <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Car" onerror="this.src='https://placehold.co/600x400/222/fff?text=No+Image'">
-                            <div class="price-tag-floating">RM <?php echo htmlentities($result->PricePerDay);?> / Day</div>
-                        </div>
-                        
-                        <div class="card-info">
-                            <h4 class="car-name"><?php echo htmlentities($result->VehiclesTitle);?></h4>
-                            <span class="brand-label"><?php echo htmlentities($result->BrandName);?></span>
-                            
-                            <div class="specs-row">
-                                <div class="specs-item"><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></div>
-                                <div class="specs-item"><i class="fa fa-gas-pump"></i> <?php echo htmlentities($result->FuelType);?></div>
-                                <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
+                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card car-card h-100">
+                            <div class="img-wrapper">
+                                <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Car Image" onerror="this.src='https://placehold.co/600x400/222/fff?text=No+Image'">
+                                <div class="price-tag-floating">RM <?php echo htmlentities($result->PricePerDay);?> / Day</div>
                             </div>
+                            
+                            <div class="card-info">
+                                <h4 class="car-name"><?php echo htmlentities($result->VehiclesTitle);?></h4>
+                                <span class="brand-label">
+                                    <?php echo htmlentities($result->BrandName);?> 
+                                    <?php if($result->VehicleType) { echo " | " . htmlentities($result->VehicleType); } ?>
+                                </span>
+                                
+                                <div class="specs-row">
+                                    <div class="specs-item"><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></div>
+                                    <div class="specs-item"><i class="fa fa-gas-pump"></i> <?php echo htmlentities($result->FuelType);?></div>
+                                    <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
+                                </div>
 
-                            <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
-                                View Details <i class="fa fa-arrow-right"></i>
-                            </a>
+                                 <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                                    View Details <i class="fa fa-arrow-right"></i>
+                    </a>
+                            </div>
                         </div>
                     </div>
-                </div>
                 <?php 
                     } 
                 } else { 
