@@ -229,7 +229,7 @@ error_reporting(0);
                             <i class="fa fa-search fa-3x mb-3 text-muted"></i>
                             <h3 class="text-white">No Vehicles Found</h3>
                             <p class="text-muted">We couldn't find any cars matching your criteria. Try selecting "All Brands" or different options.</p>
-                            <a href="car-listing.php" class="btn btn-gold mt-3" style="width: auto; padding: 10px 30px;">View All Cars</a>
+                            <a href="car-listing.php" class="btn btn-gold mt-3" style="color: #fff; width: auto; padding: 10px 30px;">View All Cars</a>
                         </div>
                     </div>
                 <?php } ?>

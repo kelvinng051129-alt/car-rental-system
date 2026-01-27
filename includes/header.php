@@ -37,7 +37,7 @@ function navActive($page, $currentPage) {
 
         <?php if(strlen($_SESSION['login'])==0) { ?>
           <li class="nav-item ms-3">
-            <a class="btn btn-outline-warning btn-sm" href="login.php">Login / Register</a>
+            <a class="btn btn-outline-warning btn-sm" href="register.php">Login / Register</a>
           </li>
         <?php } else { ?>
           <li class="nav-item ms-3 dropdown">
