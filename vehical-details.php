@@ -381,12 +381,10 @@ if(isset($_POST['submit']))
                         <div class="specs-box">
                             <i class="fa fa-cogs"></i>
                             <span>Transmission</span>
-                            <strong>Auto</strong>
+                            <strong><?php echo htmlentities($result->Transmission);?></strong>
                         </div>
                     </div>
-                </div>
-
-                <div class="detail-card">
+                </div> <div class="detail-card">
                     <h3 class="section-heading">Vehicle Overview</h3>
                     <p class="desc-text"><?php echo htmlentities($result->VehiclesOverview);?></p>
                     
@@ -418,9 +416,7 @@ if(isset($_POST['submit']))
                     </ul>
                 </div>
 
-            </div>
-
-            <div class="col-lg-4">
+            </div> <div class="col-lg-4">
                 <div class="booking-sidebar">
                     
                     <div class="price-display">
@@ -471,9 +467,7 @@ if(isset($_POST['submit']))
                     </form>
 
                 </div>
-            </div>
-
-        </div>
+            </div> </div>
     </div>
 
     <div id="imgModal" class="image-modal" onclick="closeModal()">
