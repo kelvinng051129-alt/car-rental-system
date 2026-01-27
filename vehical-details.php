@@ -106,7 +106,7 @@ if(isset($_POST['submit']))
             font-size: 3.8rem;
             color: #fff;
             text-shadow: 0 5px 20px rgba(0,0,0,0.9);
-            margin-bottom: 5px;
+            margin-bottom: 20px;
         }
         .car-brand-sub {
             color: #d4af37; /* Champagne Gold */
@@ -462,7 +462,7 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
-                            <a href="login.php" class="login-link-btn" data-bs-toggle="modal" data-bs-target="#loginform">Login to Book</a>
+                            <a href="login.php" class="login-link-btn">Login to Book</a>
                         <?php } ?>
                     </form>
 
