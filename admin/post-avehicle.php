@@ -17,10 +17,12 @@ else
         $vehicleoverview = $_POST['vehicalorcview'];
         $priceperday = $_POST['priceperday'];
         
-        // --- Pricing Logic: Receive Weekly and Monthly Prices ---
-        // If empty, default to 0 to prevent SQL errors
+        // --- Pricing Logic ---
         $priceperweek = !empty($_POST['priceperweek']) ? $_POST['priceperweek'] : 0;
         $pricepermonth = !empty($_POST['pricepermonth']) ? $_POST['pricepermonth'] : 0;
+        
+        // 🔥 NEW: Capture Security Deposit
+        $securitydeposit = !empty($_POST['securitydeposit']) ? $_POST['securitydeposit'] : 0;
 
         $fueltype = $_POST['fueltype'];
         $modelyear = $_POST['modelyear'];
@@ -31,7 +33,7 @@ else
         $vimage2 = $_FILES["img2"]["name"];
         $vimage3 = $_FILES["img3"]["name"];
 
-        // Accessories Processing (Checkbox Logic: 1 if checked, 0 if not)
+        // Accessories Processing
         $airconditioner = isset($_POST['airconditioner']) ? 1 : 0;
         $powerdoorlocks = isset($_POST['powerdoorlocks']) ? 1 : 0;
         $antilockbrakingsys = isset($_POST['antilockbrakingsys']) ? 1 : 0;
@@ -45,25 +47,25 @@ else
         $crashcensor = isset($_POST['crashcensor']) ? 1 : 0;
         $leatherseats = isset($_POST['leatherseats']) ? 1 : 0;
 
-        // Upload Images to Server Folder
+        // Upload Images
         move_uploaded_file($_FILES["img1"]["tmp_name"], "img/vehicleimages/".$_FILES["img1"]["name"]);
         move_uploaded_file($_FILES["img2"]["tmp_name"], "img/vehicleimages/".$_FILES["img2"]["name"]);
         move_uploaded_file($_FILES["img3"]["tmp_name"], "img/vehicleimages/".$_FILES["img3"]["name"]);
 
-        // --- SQL Query: Insert all data including new Price columns ---
-        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,FuelType,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:fueltype,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
+        // --- SQL Query: Updated to include SecurityDeposit ---
+        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
         
         $query = $dbh->prepare($sql);
         
-        // Bind Basic Parameters
         $query->bindParam(':vehicletitle',$vehicletitle,PDO::PARAM_STR);
         $query->bindParam(':brand',$brand,PDO::PARAM_STR);
         $query->bindParam(':vehicleoverview',$vehicleoverview,PDO::PARAM_STR);
         $query->bindParam(':priceperday',$priceperday,PDO::PARAM_STR);
-        
-        // Bind New Pricing Parameters
         $query->bindParam(':priceperweek',$priceperweek,PDO::PARAM_STR);
         $query->bindParam(':pricepermonth',$pricepermonth,PDO::PARAM_STR);
+        
+        // 🔥 Bind Security Deposit
+        $query->bindParam(':securitydeposit',$securitydeposit,PDO::PARAM_STR);
 
         $query->bindParam(':fueltype',$fueltype,PDO::PARAM_STR);
         $query->bindParam(':modelyear',$modelyear,PDO::PARAM_STR);
@@ -124,6 +126,7 @@ else
         .price-input { border: 2px solid #27ae60 !important; color: #27ae60; font-weight: bold; font-size: 1.1rem; }
         .price-input-week { border: 1px solid #2980b9 !important; color: #2980b9; }
         .price-input-month { border: 1px solid #8e44ad !important; color: #8e44ad; }
+        .price-input-deposit { border: 2px solid #c0392b !important; color: #c0392b; font-weight: bold; } /* New Style for Deposit */
 
         /* Image Upload */
         .upload-zone { border: 2px dashed #bdc3c7; border-radius: 10px; padding: 20px; text-align: center; background: #f9f9f9; transition: 0.3s; }
@@ -261,6 +264,14 @@ else
                                 <input type="number" name="pricepermonth" id="price_month" class="form-control price-input-month" placeholder="e.g. 2000">
                                 <div class="form-text">Auto-calculated (35% Discount).</div>
                             </div>
+
+                            <hr>
+                            <div class="mb-3">
+                                <label class="form-label text-danger">Security Deposit (RM)</label>
+                                <input type="number" name="securitydeposit" class="form-control price-input-deposit" placeholder="e.g. 500" required>
+                                <div class="form-text">Refundable amount (Required).</div>
+                            </div>
+
                         </div>
                     </div>
 
