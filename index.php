@@ -11,11 +11,18 @@ error_reporting(0);
     <title>Home - Buat Kerja Betul2 Car Rental</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
-        /* Hero Section Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0f0f; 
+            color: #fff;
+        }
+
+        /* --- HERO SECTION --- */
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop');
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             height: 90vh; 
@@ -24,20 +31,150 @@ error_reporting(0);
             justify-content: center;
             text-align: center;
             color: white;
+            position: relative;
         }
-        .hero-title { font-size: 3.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-        .hero-subtitle { font-size: 1.2rem; margin-bottom: 30px; color: #f1f1f1; }
-        .btn-hero { background-color: #f1c40f; color: #2c3e50; padding: 12px 30px; font-weight: bold; border-radius: 50px; text-decoration: none; transition: 0.3s; border: none;}
-        .btn-hero:hover { background-color: #d4ac0d; color: white; transform: scale(1.05); }
+        
+        .hero-title { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 4.5rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 15px;
+        }
+        
+        .hero-subtitle { 
+            font-size: 1.2rem; 
+            margin-bottom: 40px; 
+            color: #d4af37; 
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
 
-        /* Car Card Styling */
-        .car-card { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.3s; overflow: hidden; }
-        .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .car-img-top { height: 220px; object-fit: cover; width: 100%; }
-        .card-body { padding: 20px; }
-        .car-price { color: #e74c3c; font-weight: 700; font-size: 1.2rem; }
-        .car-meta { font-size: 0.85rem; color: #7f8c8d; margin-top: 10px; }
-        .car-meta i { color: #f1c40f; width: 20px; text-align: center; }
+        .btn-hero { 
+            background: linear-gradient(45deg, #d4af37, #c5a028); /* 金色渐变按钮 */
+            color: #000; 
+            padding: 15px 40px; 
+            font-weight: bold; 
+            border-radius: 2px; 
+            text-decoration: none; 
+            transition: 0.3s; 
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-hero:hover { 
+            background: #fff; 
+            color: #000; 
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        /* --- SECTION HEADERS --- */
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            font-size: 2.5rem;
+        }
+        .section-header p {
+            color: #888;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .section-divider {
+            width: 60px; 
+            height: 2px; 
+            background: #d4af37; 
+            margin: 20px auto; 
+            border: none;
+        }
+
+        /* --- CAR CARD STYLING (MATCHING LISTING PAGE) --- */
+        .bg-custom-dark {
+            background-color: #0f0f0f;
+        }
+
+        .car-card { 
+            background: #181818;
+            border: 1px solid #2a2a2a; 
+            border-radius: 0; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            transition: all 0.4s ease; 
+            overflow: hidden; 
+        }
+        .car-card:hover { 
+            transform: translateY(-10px); 
+            border-color: #444;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        }
+        
+        .img-wrapper {
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+        }
+        .car-img-top { 
+            height: 100%; 
+            object-fit: cover; 
+            width: 100%; 
+            transition: 0.6s;
+            filter: brightness(0.9);
+        }
+        .car-card:hover .car-img-top { transform: scale(1.08); filter: brightness(1.1); }
+        
+        .card-body { padding: 25px; }
+        
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .car-price { 
+            color: #d4af37; 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .car-meta { 
+            border-top: 1px solid #333;
+            padding-top: 15px;
+            font-size: 0.85rem; 
+            color: #aaa; 
+            display: flex;
+            justify-content: space-between;
+        }
+        .car-meta i { color: #d4af37; margin-right: 5px; }
+
+        .btn-outline-gold {
+            border: 1px solid #555;
+            color: #fff;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+        .btn-outline-gold:hover {
+            background: #d4af37;
+            border-color: #d4af37;
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -48,16 +185,17 @@ error_reporting(0);
         <div class="container">
             <h1 class="hero-title">Find Your Best Drive</h1>
             <p class="hero-subtitle">Premium Cars. Unlimited Miles. Unforgettable Moments.</p>
-            <a href="car-listing.php" class="btn-hero">Browse Cars <i class="fa fa-arrow-right"></i></a>
+            <br>
+            <a href="car-listing.php" class="btn-hero">Browse Collection</a>
         </div>
     </section>
 
-    <section class="py-5 bg-light">
+    <section class="py-5 bg-custom-dark">
         <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold" style="color: #2c3e50;">Recent Vehicles</h2>
-                <p class="text-muted">Check out the latest additions to our fleet.</p>
-                <hr style="width: 80px; height: 3px; background: #f1c40f; margin: 10px auto; border:none;">
+            <div class="section-header">
+                <h2>New Arrivals</h2>
+                <hr class="section-divider">
+                <p>Experience our latest premium additions</p>
             </div>
 
             <div class="row g-4">
@@ -75,24 +213,26 @@ error_reporting(0);
                 ?>
                     <div class="col-md-4">
                         <div class="card car-card h-100">
-                            <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" class="car-img-top" alt="Car Image" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+                            <div class="img-wrapper">
+                                <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" class="car-img-top" alt="Car Image" onerror="this.src='https://placehold.co/600x400/222/fff?text=No+Image'">
+                            </div>
                             
                             <div class="card-body">
-                                <h5 class="card-title fw-bold"><?php echo htmlentities($result->BrandName);?> , <?php echo htmlentities($result->VehiclesTitle);?></h5>
-                                <p class="car-price">RM <?php echo htmlentities($result->PricePerDay);?> / Day</p>
+                                <h5 class="card-title"><?php echo htmlentities($result->BrandName);?> <?php echo htmlentities($result->VehiclesTitle);?></h5>
+                                <span class="car-price">RM <?php echo htmlentities($result->PricePerDay);?> / Day</span>
                                 
-                                <div class="car-meta d-flex justify-content-between">
+                                <div class="car-meta">
                                     <span><i class="fa fa-gas-pump"></i> <?php echo htmlentities($result->FuelType);?></span>
                                     <span><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></span>
-                                    <span><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</span>
+                                    <span><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?></span>
                                 </div>
                                 
-                                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn btn-dark w-100 mt-3">View Details</a>
+                                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-outline-gold">View Details</a>
                             </div>
                         </div>
                     </div>
                 <?php }} else { ?>
-                    <div class="col-12 text-center">
+                    <div class="col-12 text-center text-white">
                         <p class="text-muted">No vehicles available at the moment.</p>
                     </div>
                 <?php } ?>
