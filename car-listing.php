@@ -34,7 +34,7 @@ error_reporting(0);
             align-items: flex-end; /* Align text to bottom */
             justify-content: center;
             position: relative;
-            padding-bottom: 90px;
+            padding-bottom: 150px;
         }
 
         .hero-content {
@@ -47,13 +47,13 @@ error_reporting(0);
             font-family: 'Playfair Display', serif;
             font-size: 4.5rem;
             color: #fff;
-            margin-bottom: 5px;
             letter-spacing: -1px;
             text-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
         
         .hero-content p {
             font-size: 1.1rem;
+            margin-bottom: 120px;
             color: #d4af37; /* Champagne Gold */
             letter-spacing: 4px;
             text-transform: uppercase;

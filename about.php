@@ -15,126 +15,200 @@ error_reporting(0);
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Keep same premium vibe as index.php */
+    /* ===== SAME AS INDEX THEME ===== */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #0f0f0f;
+        color: #fff;
+    }
+
+    /* ===== HERO (match index hero-section feel) ===== */
     .page-hero {
-      background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.75)),
-        url('https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=2070&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      padding: 90px 0;
-      color: #fff;
-      text-align: center;
+        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)),
+            url('https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=2070&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        position: relative;
     }
+
     .hero-title {
-      font-size: 3rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+        font-family: 'Playfair Display', serif;
+        font-size: 4.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        margin-bottom: 15px;
     }
+
     .hero-subtitle {
-      font-size: 1.1rem;
-      color: #f1f1f1;
-      margin-top: 10px;
+        font-size: 1.2rem;
+        margin-bottom: 0;
+        color: #d4af37;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        font-weight: 500;
     }
+
     .accent-line {
-      width: 90px;
-      height: 3px;
-      background: #f1c40f;
-      margin: 18px auto 0;
-      border: none;
+        width: 60px;
+        height: 2px;
+        background: #d4af37;
+        margin: 20px auto 0;
+        border: none;
     }
 
+    /* ===== SECTION TITLES (match index headers) ===== */
     .section-title {
-      color: #2c3e50;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .text-soft { color: #7f8c8d; }
-
-    .info-card {
-      border: none;
-      border-radius: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
-      transition: 0.3s;
-      height: 100%;
-    }
-    .info-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.14);
-    }
-    .icon-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(241,196,15,0.18);
-      color: #f1c40f;
-      font-size: 1.1rem;
+        font-family: 'Playfair Display', serif;
+        color: #fff;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-transform: none; /* index doesn't force uppercase for h2 */
+        letter-spacing: 0;
     }
 
-    .stat-card {
-      border: none;
-      border-radius: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      padding: 22px;
-      background: #fff;
-      height: 100%;
+    .text-soft {
+        color: #888;
+        font-size: 0.95rem;
+        letter-spacing: 0.2px;
     }
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: #2c3e50;
-    }
-    .stat-label { color: #7f8c8d; font-size: 0.9rem; }
 
+    /* Replace bg-light sections to dark theme */
+    .bg-light {
+        background-color: #0f0f0f !important;
+    }
+
+    /* ===== CARDS (match index car-card look) ===== */
+    .info-card,
+    .stat-card,
     .team-card {
-      border: none;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
-    }
-    .team-img {
-      height: 500px;
-      object-fit: cover;
-      width: 100%;
+        background: #181818;
+        border: 1px solid #2a2a2a;
+        border-radius: 0; /* index uses sharp edges */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transition: all 0.4s ease;
+        height: 100%;
     }
 
+    .info-card:hover,
+    .stat-card:hover,
+    .team-card:hover {
+        transform: translateY(-10px);
+        border-color: #444;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    /* Icon badge like index gold icon style */
+    .icon-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid #2a2a2a;
+        color: #d4af37;
+        font-size: 1.1rem;
+    }
+
+    /* ===== STATS ===== */
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #d4af37;
+        letter-spacing: 1px;
+    }
+
+    .stat-label {
+        color: #aaa;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* ===== TEAM IMAGE ===== */
+    .team-img {
+        height: 500px;
+        object-fit: cover;
+        width: 100%;
+        transition: 0.6s;
+        filter: brightness(0.9);
+    }
+    .team-card:hover .team-img {
+        transform: scale(1.05);
+        filter: brightness(1.05);
+    }
+
+    /* ===== CTA BUTTONS (match btn-hero + btn-outline-gold style) ===== */
     .btn-cta {
-      background-color: #f1c40f;
-      color: #2c3e50;
-      padding: 12px 28px;
-      font-weight: 800;
-      border-radius: 50px;
-      text-decoration: none;
-      transition: 0.3s;
-      border: none;
-      display: inline-block;
+        background: linear-gradient(45deg, #d4af37, #c5a028);
+        color: #000;
+        padding: 15px 40px;
+        font-weight: bold;
+        border-radius: 2px;
+        text-decoration: none;
+        transition: 0.3s;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: inline-block;
     }
     .btn-cta:hover {
-      background-color: #d4ac0d;
-      color: #fff;
-      transform: scale(1.04);
+        background: #fff;
+        color: #000;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
     }
+
     .btn-cta-outline {
-      border: 2px solid #f1c40f;
-      color: #f1c40f;
-      padding: 10px 24px;
-      font-weight: 800;
-      border-radius: 50px;
-      text-decoration: none;
-      transition: 0.3s;
-      display: inline-block;
-      margin-left: 10px;
+        border: 1px solid #555;
+        color: #fff;
+        padding: 12px 30px;
+        border-radius: 2px;
+        text-decoration: none;
+        transition: 0.3s;
+        display: inline-block;
+        margin-left: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
     }
     .btn-cta-outline:hover {
-      background: #f1c40f;
-      color: #2c3e50;
-      transform: scale(1.03);
+        background: #d4af37;
+        border-color: #d4af37;
+        color: #000;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
     }
-  </style>
+
+    /* Make list/check icons match gold */
+    .fa-check-circle,
+    .fa-shield-halved,
+    .fa-sack-dollar,
+    .fa-calendar-check,
+    .fa-screwdriver-wrench,
+    .fa-headset {
+        color: #d4af37 !important;
+    }
+
+    /* Text inside cards better contrast */
+    .info-card h5, .team-card h5 { color: #fff !important; }
+    .info-card .fw-bold, .team-card .fw-bold { color: #fff !important; }
+
+    /* Small helper for code text on dark bg */
+    code {
+        color: #d4af37;
+    }
+</style>
+
 </head>
 
 <body>
