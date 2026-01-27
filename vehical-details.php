@@ -3,6 +3,8 @@ session_start();
 include('includes/config.php');
 error_reporting(0);
 
+$booking_status = ""; 
+
 if(isset($_POST['submit']))
 {
     $fromdate=$_POST['fromdate'];
@@ -15,8 +17,7 @@ if(isset($_POST['submit']))
     // Check if user is logged in
     if(strlen($_SESSION['login'])==0)
     {   
-        echo "<script>alert('Please login to book a car.');</script>";
-        echo "<script>window.location.href='index.php';</script>";
+        $booking_status = "not_logged_in";
     }
     else
     {
@@ -32,11 +33,11 @@ if(isset($_POST['submit']))
         $lastInsertId = $dbh->lastInsertId();
         if($lastInsertId)
         {
-            echo "<script>alert('Booking successful! We will contact you shortly.');</script>";
+            $booking_status = "success";
         }
         else 
         {
-            echo "<script>alert('Something went wrong. Please try again');</script>";
+            $booking_status = "error";
         }
     }
 }
@@ -50,6 +51,7 @@ if(isset($_POST['submit']))
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
     
     <style>
         body {
@@ -314,24 +316,20 @@ if(isset($_POST['submit']))
     <div class="detail-hero">
         <div id="carCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
             <div class="carousel-inner">
-                
                 <div class="carousel-item active">
                     <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Main View">
                 </div>
-
                 <?php if($result->Vimage2!="") { ?>
                 <div class="carousel-item">
                     <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage2);?>" alt="Side View">
                 </div>
                 <?php } ?>
-
                 <?php if($result->Vimage3!="") { ?>
                 <div class="carousel-item">
                     <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage3);?>" alt="Interior View">
                 </div>
                 <?php } ?>
             </div>
-
             <button class="carousel-control-prev" type="button" data-bs-target="#carCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
@@ -384,7 +382,9 @@ if(isset($_POST['submit']))
                             <strong><?php echo htmlentities($result->Transmission);?></strong>
                         </div>
                     </div>
-                </div> <div class="detail-card">
+                </div>
+
+                <div class="detail-card">
                     <h3 class="section-heading">Vehicle Overview</h3>
                     <p class="desc-text"><?php echo htmlentities($result->VehiclesOverview);?></p>
                     
@@ -416,7 +416,9 @@ if(isset($_POST['submit']))
                     </ul>
                 </div>
 
-            </div> <div class="col-lg-4">
+            </div>
+
+            <div class="col-lg-4">
                 <div class="booking-sidebar">
                     
                     <div class="price-display">
@@ -462,12 +464,18 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
+<<<<<<< HEAD
                             <a href="login.php" class="login-link-btn">Login to Book</a>
+=======
+                            <a href="#loginform" class="login-link-btn" data-bs-toggle="modal" data-bs-target="#loginform">Login to Book</a>
+>>>>>>> 3b796ed789fe39938e2082bfce598b9ce2112e4c
                         <?php } ?>
                     </form>
 
                 </div>
-            </div> </div>
+            </div>
+
+        </div>
     </div>
 
     <div id="imgModal" class="image-modal" onclick="closeModal()">
@@ -482,6 +490,7 @@ if(isset($_POST['submit']))
     <?php include('includes/registration.php');?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         // 1. Function to Open Lightbox (Zoom)
@@ -498,6 +507,46 @@ if(isset($_POST['submit']))
             var modal = document.getElementById("imgModal");
             modal.style.display = "none";
         }
+
+        // 3. Handle SweetAlert Popups based on PHP status
+        <?php if($booking_status == "success") { ?>
+            Swal.fire({
+                title: 'Booking Confirmed!',
+                text: 'We have received your booking request. Our team will contact you shortly.',
+                icon: 'success',
+                confirmButtonText: 'Great!',
+                confirmButtonColor: '#d4af37', // Gold button
+                background: '#1a1a1a', // Dark background
+                color: '#fff' // White text
+            });
+        <?php } elseif($booking_status == "error") { ?>
+            Swal.fire({
+                title: 'Booking Failed',
+                text: 'Something went wrong. Please try again later.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+        <?php } elseif($booking_status == "not_logged_in") { ?>
+            Swal.fire({
+                title: 'Login Required',
+                text: 'Please login to book this vehicle.',
+                icon: 'warning',
+                confirmButtonText: 'Login Now',
+                confirmButtonColor: '#d4af37',
+                showCancelButton: true,
+                cancelButtonColor: '#555',
+                background: '#1a1a1a',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Open Login Modal via Bootstrap
+                    var myModal = new bootstrap.Modal(document.getElementById('loginform'));
+                    myModal.show();
+                }
+            });
+        <?php } ?>
     </script>
 </body>
 </html>
