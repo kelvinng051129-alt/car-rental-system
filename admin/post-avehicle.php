@@ -21,10 +21,14 @@ else
         $priceperweek = !empty($_POST['priceperweek']) ? $_POST['priceperweek'] : 0;
         $pricepermonth = !empty($_POST['pricepermonth']) ? $_POST['pricepermonth'] : 0;
         
-        // 🔥 NEW: Capture Security Deposit
+        // Security Deposit
         $securitydeposit = !empty($_POST['securitydeposit']) ? $_POST['securitydeposit'] : 0;
 
         $fueltype = $_POST['fueltype'];
+        
+        // Capture Transmission
+        $transmission = $_POST['transmission'];
+
         $modelyear = $_POST['modelyear'];
         $seatingcapacity = $_POST['seatingcapacity'];
         
@@ -52,8 +56,8 @@ else
         move_uploaded_file($_FILES["img2"]["tmp_name"], "img/vehicleimages/".$_FILES["img2"]["name"]);
         move_uploaded_file($_FILES["img3"]["tmp_name"], "img/vehicleimages/".$_FILES["img3"]["name"]);
 
-        // --- SQL Query: Updated to include SecurityDeposit ---
-        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
+        // --- SQL Query ---
+        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,Transmission,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:transmission,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
         
         $query = $dbh->prepare($sql);
         
@@ -63,11 +67,9 @@ else
         $query->bindParam(':priceperday',$priceperday,PDO::PARAM_STR);
         $query->bindParam(':priceperweek',$priceperweek,PDO::PARAM_STR);
         $query->bindParam(':pricepermonth',$pricepermonth,PDO::PARAM_STR);
-        
-        // 🔥 Bind Security Deposit
         $query->bindParam(':securitydeposit',$securitydeposit,PDO::PARAM_STR);
-
         $query->bindParam(':fueltype',$fueltype,PDO::PARAM_STR);
+        $query->bindParam(':transmission',$transmission,PDO::PARAM_STR);
         $query->bindParam(':modelyear',$modelyear,PDO::PARAM_STR);
         $query->bindParam(':seatingcapacity',$seatingcapacity,PDO::PARAM_STR);
         $query->bindParam(':vimage1',$vimage1,PDO::PARAM_STR);
@@ -105,34 +107,22 @@ else
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f5f7fa; font-family: 'Segoe UI', sans-serif; padding-top: 100px; }
-        
-        /* Header Styles */
         .page-header { border-left: 5px solid #f1c40f; padding-left: 15px; margin-bottom: 30px; }
         .page-header h2 { font-weight: 800; color: #2c3e50; margin: 0; }
         .page-header p { color: #7f8c8d; margin: 5px 0 0; }
-        
-        /* Card Styles */
         .card-custom { background: white; border-radius: 12px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; overflow: hidden; }
         .card-header-custom { background-color: #2c3e50; color: white; padding: 15px 20px; font-weight: 600; display: flex; align-items: center; }
         .card-header-custom i { margin-right: 10px; color: #f1c40f; }
         .card-body-custom { padding: 30px; }
-
-        /* Form Inputs */
         .form-label { font-weight: 600; color: #34495e; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .form-control, .form-select { border-radius: 8px; padding: 12px; border: 1px solid #e0e0e0; background-color: #fcfcfc; }
         .form-control:focus, .form-select:focus { border-color: #f1c40f; box-shadow: 0 0 0 0.2rem rgba(241, 196, 15, 0.2); background-color: #fff; }
-        
-        /* Pricing Input Colors */
         .price-input { border: 2px solid #27ae60 !important; color: #27ae60; font-weight: bold; font-size: 1.1rem; }
         .price-input-week { border: 1px solid #2980b9 !important; color: #2980b9; }
         .price-input-month { border: 1px solid #8e44ad !important; color: #8e44ad; }
-        .price-input-deposit { border: 2px solid #c0392b !important; color: #c0392b; font-weight: bold; } /* New Style for Deposit */
-
-        /* Image Upload */
+        .price-input-deposit { border: 2px solid #c0392b !important; color: #c0392b; font-weight: bold; }
         .upload-zone { border: 2px dashed #bdc3c7; border-radius: 10px; padding: 20px; text-align: center; background: #f9f9f9; transition: 0.3s; }
         .upload-zone:hover { border-color: #f1c40f; background: #fffdf5; }
-
-        /* Accessories */
         .accessory-item { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px; transition: 0.2s; display: flex; align-items: center; }
         .accessory-item:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.05); border-color: #f1c40f; }
         .accessory-icon { width: 40px; height: 40px; background: #f4f6f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: #2c3e50; font-size: 1.2rem; }
@@ -144,28 +134,20 @@ else
     <?php include('includes/header.php');?>
 
     <div class="container">
-        
         <div class="page-header">
             <h2>Post A New Vehicle</h2>
             <p>Fill in the details below to add a car to your fleet.</p>
         </div>
 
-        <?php if(isset($msg)){ ?>
-            <div class="alert alert-success shadow-sm"><i class="fa fa-check-circle"></i> <?php echo $msg; ?></div>
-        <?php } ?>
-        <?php if(isset($error)){ ?>
-            <div class="alert alert-danger shadow-sm"><i class="fa fa-exclamation-triangle"></i> <?php echo $error; ?></div>
-        <?php } ?>
+        <?php if(isset($msg)){ ?><div class="alert alert-success shadow-sm"><i class="fa fa-check-circle"></i> <?php echo $msg; ?></div><?php } ?>
+        <?php if(isset($error)){ ?><div class="alert alert-danger shadow-sm"><i class="fa fa-exclamation-triangle"></i> <?php echo $error; ?></div><?php } ?>
 
         <form method="post" enctype="multipart/form-data">
-            
             <div class="row">
                 <div class="col-lg-8">
                     
                     <div class="card-custom">
-                        <div class="card-header-custom">
-                            <i class="fa fa-info-circle"></i> Basic Information
-                        </div>
+                        <div class="card-header-custom"><i class="fa fa-info-circle"></i> Basic Information</div>
                         <div class="card-body-custom">
                             <div class="row g-4">
                                 <div class="col-md-12">
@@ -173,7 +155,7 @@ else
                                     <input type="text" name="vehicletitle" class="form-control" placeholder="e.g. Toyota Camry 2.5 Hybrid" required>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Brand</label>
                                     <select name="brandname" class="form-select" required>
                                         <option value="">Select Brand</option>
@@ -184,20 +166,26 @@ else
                                         $results=$query->fetchAll(PDO::FETCH_OBJ);
                                         if($query->rowCount() > 0) {
                                             foreach($results as $result) { ?>
-                                                <option value="<?php echo htmlentities($result->id);?>">
-                                                    <?php echo htmlentities($result->BrandName);?>
-                                                </option>
+                                                <option value="<?php echo htmlentities($result->id);?>"><?php echo htmlentities($result->BrandName);?></option>
                                         <?php }} ?>
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Fuel Type</label>
                                     <select name="fueltype" class="form-select" required>
                                         <option value="Petrol">Petrol</option>
                                         <option value="Diesel">Diesel</option>
                                         <option value="Hybrid">Hybrid</option>
                                         <option value="Electric">Electric</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label" style="color: #d35400;">Transmission</label>
+                                    <select name="transmission" class="form-select" required>
+                                        <option value="Auto">Auto (Automatic)</option>
+                                        <option value="Manual">Manual</option>
                                     </select>
                                 </div>
 
@@ -212,7 +200,7 @@ else
                                 </div>
                                 
                                 <div class="col-12">
-                                    <label class="form-label">Vehicle Overview / Description</label>
+                                    <label class="form-label">Vehicle Overview</label>
                                     <textarea name="vehicalorcview" class="form-control" rows="4" placeholder="Describe the car features..." required></textarea>
                                 </div>
                             </div>
@@ -241,7 +229,6 @@ else
                 </div>
 
                 <div class="col-lg-4">
-                    
                     <div class="card-custom">
                         <div class="card-header-custom" style="background: #27ae60;">
                             <i class="fa fa-money-bill-wave text-white"></i> Pricing Packages
@@ -252,26 +239,22 @@ else
                                 <input type="number" name="priceperday" id="price_day" class="form-control price-input" placeholder="e.g. 100" required>
                                 <div class="form-text">Standard daily rate.</div>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label text-primary">Price Per Week (7 Days)</label>
                                 <input type="number" name="priceperweek" id="price_week" class="form-control price-input-week" placeholder="e.g. 600">
                                 <div class="form-text">Auto-calculated (15% Discount).</div>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label" style="color: #8e44ad;">Price Per Month (30 Days)</label>
                                 <input type="number" name="pricepermonth" id="price_month" class="form-control price-input-month" placeholder="e.g. 2000">
                                 <div class="form-text">Auto-calculated (35% Discount).</div>
                             </div>
-
                             <hr>
                             <div class="mb-3">
                                 <label class="form-label text-danger">Security Deposit (RM)</label>
                                 <input type="number" name="securitydeposit" class="form-control price-input-deposit" placeholder="e.g. 500" required>
                                 <div class="form-text">Refundable amount (Required).</div>
                             </div>
-
                         </div>
                     </div>
 
@@ -292,45 +275,29 @@ else
                                 <label class="form-label">Side/Interior 2</label>
                                 <div class="upload-zone"><input type="file" name="img3" class="form-control"></div>
                             </div>
-                            <div class="alert alert-info small">
-                                <i class="fa fa-info-circle"></i> Use landscape images (e.g., 800x600).
-                            </div>
+                            <div class="alert alert-info small"><i class="fa fa-info-circle"></i> Use landscape images (e.g., 800x600).</div>
                         </div>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" name="submit" class="btn btn-warning btn-lg text-white fw-bold shadow">
-                            <i class="fa fa-check-circle"></i> Publish Vehicle
-                        </button>
+                        <button type="submit" name="submit" class="btn btn-warning btn-lg text-white fw-bold shadow"><i class="fa fa-check-circle"></i> Publish Vehicle</button>
                     </div>
-
                 </div>
             </div>
         </form>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
-        // Get elements by ID
         const dailyInput = document.getElementById('price_day');
         const weeklyInput = document.getElementById('price_week');
         const monthlyInput = document.getElementById('price_month');
-
-        // Listen for input changes on Daily Price
         dailyInput.addEventListener('input', function() {
             const dailyPrice = parseFloat(this.value);
-
             if (!isNaN(dailyPrice)) {
-                // Calculation: Daily * 7 * 0.85 (15% Off)
-                const weeklyPrice = Math.round(dailyPrice * 7 * 0.85);
-                weeklyInput.value = weeklyPrice;
-
-                // Calculation: Daily * 30 * 0.65 (35% Off)
-                const monthlyPrice = Math.round(dailyPrice * 30 * 0.65);
-                monthlyInput.value = monthlyPrice;
+                weeklyInput.value = Math.round(dailyPrice * 7 * 0.85);
+                monthlyInput.value = Math.round(dailyPrice * 30 * 0.65);
             } else {
-                // Clear fields if input is empty
                 weeklyInput.value = '';
                 monthlyInput.value = '';
             }
