@@ -20,7 +20,7 @@ error_reporting(0);
             color: #fff;
         }
 
-        /* --- 1. LUXURY HERO BANNER --- */
+        /* --- 1. HERO BANNER --- */
         .hero-banner {
             background-color: #000;
             background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,15,15,1) 100%), url('https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop');
@@ -68,7 +68,7 @@ error_reporting(0);
             margin: 15px auto 0;
         }
 
-        /* --- 2. FLOATING SEARCH BAR --- */
+        /* --- 2. SEARCH BAR --- */
         .search-container {
             margin-top: -60px;
             position: relative;
@@ -76,7 +76,7 @@ error_reporting(0);
         }
 
         .search-box {
-            background: rgba(35, 35, 35, 0.9); /* Dark Glass Effect */
+            background: rgba(35, 35, 35, 0.9);
             backdrop-filter: blur(15px);
             padding: 35px 30px;
             border-radius: 2px;
@@ -134,7 +134,7 @@ error_reporting(0);
             box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
         }
 
-        /* --- 3. CAR LISTING CARDS --- */
+        /* --- 3. CAR CARD STYLING --- */
         .section-header {
             text-align: left;
             margin-bottom: 40px;
@@ -297,7 +297,7 @@ error_reporting(0);
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label">Fuel Type</label>
                         <select class="form-select" name="fueltype">
-                            <option value="All Fuel Types" selected>All Fuel Types</option>
+                            <option selected>All Fuel Types</option>
                             <option value="Petrol">Petrol</option>
                             <option value="Diesel">Diesel</option>
                             <option value="Hybrid">Hybrid</option>
@@ -329,7 +329,7 @@ error_reporting(0);
 
                 if($query->rowCount() > 0) {
                     foreach($results as $result) { ?>
-                    <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                    
                     <div class="col-lg-4 col-md-6">
                         <div class="card car-card h-100">
                             <div class="img-wrapper">
@@ -350,9 +350,9 @@ error_reporting(0);
                                     <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
                                 </div>
 
-                                 <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
                                     View Details <i class="fa fa-arrow-right"></i>
-                    </a>
+                                </a>
                             </div>
                         </div>
                     </div>

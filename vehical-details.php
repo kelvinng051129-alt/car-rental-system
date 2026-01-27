@@ -126,6 +126,28 @@ if(isset($_POST['submit']))
             z-index: 10;
         }
 
+        /* 🔥 BACK BUTTON STYLE */
+        .btn-back-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            padding: 8px 20px;
+            border-radius: 50px;
+            background: #111;
+        }
+        .btn-back-link:hover {
+            color: #000;
+            background: #d4af37;
+            border-color: #d4af37;
+            transform: translateX(-5px);
+        }
+        .btn-back-link i { margin-right: 8px; }
+
         /* Detail Card */
         .detail-card {
             background: #111; /* Dark Grey */
@@ -349,6 +371,15 @@ if(isset($_POST['submit']))
     </div>
 
     <div class="container content-wrapper">
+        
+        <div class="row">
+            <div class="col-12">
+                <a href="car-listing.php" class="btn-back-link">
+                    <i class="fa fa-arrow-left"></i> Back to Inventory
+                </a>
+            </div>
+        </div>
+
         <div class="row">
             
             <div class="col-lg-8">
@@ -464,7 +495,7 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
-                            <a href="login.php" class="login-link-btn">Login to Book</a>
+                            <a href="#loginform" class="login-link-btn" data-bs-toggle="modal" data-bs-target="#loginform">Login to Book</a>
                         <?php } ?>
                     </form>
 
