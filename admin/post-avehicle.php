@@ -20,15 +20,13 @@ else
         // --- Pricing Logic ---
         $priceperweek = !empty($_POST['priceperweek']) ? $_POST['priceperweek'] : 0;
         $pricepermonth = !empty($_POST['pricepermonth']) ? $_POST['pricepermonth'] : 0;
-        
-        // Security Deposit
         $securitydeposit = !empty($_POST['securitydeposit']) ? $_POST['securitydeposit'] : 0;
 
-        $fueltype = $_POST['fueltype'];
-        
-        // Capture Transmission
-        $transmission = $_POST['transmission'];
+        // Capture Vehicle Type
+        $vehicletype = $_POST['vehicletype'];
 
+        $fueltype = $_POST['fueltype'];
+        $transmission = $_POST['transmission'];
         $modelyear = $_POST['modelyear'];
         $seatingcapacity = $_POST['seatingcapacity'];
         
@@ -57,7 +55,7 @@ else
         move_uploaded_file($_FILES["img3"]["tmp_name"], "img/vehicleimages/".$_FILES["img3"]["name"]);
 
         // --- SQL Query ---
-        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,Transmission,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:transmission,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
+        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,Transmission,VehicleType,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:transmission,:vehicletype,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
         
         $query = $dbh->prepare($sql);
         
@@ -70,6 +68,10 @@ else
         $query->bindParam(':securitydeposit',$securitydeposit,PDO::PARAM_STR);
         $query->bindParam(':fueltype',$fueltype,PDO::PARAM_STR);
         $query->bindParam(':transmission',$transmission,PDO::PARAM_STR);
+        
+        // Bind Vehicle Type
+        $query->bindParam(':vehicletype',$vehicletype,PDO::PARAM_STR);
+
         $query->bindParam(':modelyear',$modelyear,PDO::PARAM_STR);
         $query->bindParam(':seatingcapacity',$seatingcapacity,PDO::PARAM_STR);
         $query->bindParam(':vimage1',$vimage1,PDO::PARAM_STR);
@@ -172,6 +174,18 @@ else
                                 </div>
 
                                 <div class="col-md-4">
+                                    <label class="form-label">Vehicle Type</label>
+                                    <select name="vehicletype" class="form-select" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Sedan">Sedan</option>
+                                        <option value="Hatchback">Hatchback</option>
+                                        <option value="SUV">SUV</option>
+                                        <option value="MPV">MPV</option>
+                                        <option value="Coupe">Coupe</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
                                     <label class="form-label">Fuel Type</label>
                                     <select name="fueltype" class="form-select" required>
                                         <option value="Petrol">Petrol</option>
@@ -189,12 +203,12 @@ else
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Model Year</label>
                                     <input type="number" min="2000" max="<?php echo date('Y')+1; ?>" name="modelyear" class="form-control" placeholder="e.g. <?php echo date('Y'); ?>" required>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label">Seating Capacity</label>
                                     <input type="number" min="1" max="7" name="seatingcapacity" class="form-control" placeholder="e.g. 5" required>
                                 </div>

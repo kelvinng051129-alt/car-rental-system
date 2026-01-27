@@ -23,15 +23,12 @@ error_reporting(0);
         /* --- 1. LUXURY HERO BANNER --- */
         .hero-banner {
             background-color: #000;
-            
-            /* Premium Dark Mercedes Image from Unsplash */
             background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,15,15,1) 100%), url('https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop');
-            
             background-size: cover;
             background-position: center;
-            height: 600px; /* Tall height for impact */
+            height: 600px; 
             display: flex;
-            align-items: flex-end; /* Align text to bottom */
+            align-items: flex-end; 
             justify-content: center;
             position: relative;
             padding-bottom: 150px;
@@ -62,7 +59,6 @@ error_reporting(0);
             position: relative;
             display: inline-block;
         }
-        /* Gold Underline Decoration */
         .hero-content p::after {
             content: '';
             display: block;
@@ -82,7 +78,7 @@ error_reporting(0);
         .search-box {
             background: rgba(35, 35, 35, 0.9); /* Dark Glass Effect */
             backdrop-filter: blur(15px);
-            padding: 40px;
+            padding: 35px 30px;
             border-radius: 2px;
             border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
@@ -103,7 +99,7 @@ error_reporting(0);
             border-radius: 0;
             color: #fff;
             padding-left: 0;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 400;
             transition: 0.3s;
             cursor: pointer;
@@ -114,18 +110,22 @@ error_reporting(0);
             border-color: #d4af37;
             box-shadow: none;
         }
+        .form-select option {
+            background-color: #1a1a1a; 
+            color: #fff;
+        }
 
         .btn-gold {
             background: linear-gradient(45deg, #d4af37, #c5a028);
             color: #000;
             border: none;
             width: 100%;
-            height: 55px;
+            height: 50px;
             font-weight: 700;
             letter-spacing: 1px;
             text-transform: uppercase;
             transition: all 0.4s ease;
-            margin-top: 24px;
+            margin-top: 28px;
         }
         .btn-gold:hover {
             background: #fff;
@@ -163,7 +163,6 @@ error_reporting(0);
             margin-bottom: 30px;
             position: relative;
         }
-        
         .car-card:hover {
             transform: translateY(-10px);
             border-color: #444;
@@ -198,9 +197,7 @@ error_reporting(0);
             font-size: 1rem;
         }
 
-        .card-info {
-            padding: 30px;
-        }
+        .card-info { padding: 30px; }
 
         .car-name {
             color: #fff;
@@ -226,11 +223,7 @@ error_reporting(0);
             color: #aaa;
             font-size: 0.85rem;
         }
-        
-        .specs-item i {
-            color: #d4af37;
-            margin-right: 8px;
-        }
+        .specs-item i { color: #d4af37; margin-right: 8px; }
 
         .btn-view-arrow {
             display: inline-block;
@@ -271,8 +264,9 @@ error_reporting(0);
     <div class="container search-container">
         <div class="search-box">
             <form action="search-car-result.php" method="post">
-                <div class="row align-items-center g-4">
-                    <div class="col-md-4">
+                <div class="row align-items-center g-3">
+                    
+                    <div class="col-lg-3 col-md-6">
                         <label class="form-label">Select Brand</label>
                         <select class="form-select" name="brand">
                             <option selected>All Brands</option>
@@ -287,24 +281,31 @@ error_reporting(0);
                             <?php }} ?>
                         </select>
                     </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">Vehicle Type</label>
+                        <select class="form-select" name="vehicletype">
+                            <option value="All Types" selected>All Types</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="SUV">SUV</option>
+                            <option value="MPV">MPV</option>
+                            <option value="Coupe">Coupe</option>
+                        </select>
+                    </div>
                     
-                    <div class="col-md-4">
+                    <div class="col-lg-3 col-md-6">
                         <label class="form-label">Fuel Type</label>
                         <select class="form-select" name="fueltype">
-                            <option selected>All Types</option>
-                            <?php 
-                            $sql_fuel = "SELECT DISTINCT FuelType FROM tblvehicles WHERE FuelType IS NOT NULL";
-                            $query_fuel = $dbh -> prepare($sql_fuel);
-                            $query_fuel->execute();
-                            $results_fuel=$query_fuel->fetchAll(PDO::FETCH_OBJ);
-                            if($query_fuel->rowCount() > 0) {
-                                foreach($results_fuel as $row) { ?>  
-                                <option value="<?php echo htmlentities($row->FuelType);?>"><?php echo htmlentities($row->FuelType);?></option>
-                            <?php }} ?>
+                            <option value="All Fuel Types" selected>All Fuel Types</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Electric">Electric</option>
                         </select>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-lg-3 col-md-6">
                         <button type="submit" class="btn btn-gold">Find Vehicle</button>
                     </div>
                 </div>
@@ -321,7 +322,6 @@ error_reporting(0);
 
             <div class="row g-4">
                 <?php 
-                // Fetch vehicles from database
                 $sql = "SELECT tblvehicles.*,tblbrands.BrandName,tblbrands.id as bid from tblvehicles join tblbrands on tblbrands.id=tblvehicles.VehiclesBrand order by tblvehicles.id desc";
                 $query = $dbh -> prepare($sql);
                 $query->execute();
@@ -331,7 +331,7 @@ error_reporting(0);
                     foreach($results as $result) { ?>
                     
                     <div class="col-lg-4 col-md-6">
-                        <div class="car-card">
+                        <div class="card car-card h-100">
                             <div class="img-wrapper">
                                 <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Car Image" onerror="this.src='https://placehold.co/600x400/222/fff?text=No+Image'">
                                 <div class="price-tag-floating">RM <?php echo htmlentities($result->PricePerDay);?> / Day</div>
@@ -339,7 +339,10 @@ error_reporting(0);
                             
                             <div class="card-info">
                                 <h4 class="car-name"><?php echo htmlentities($result->VehiclesTitle);?></h4>
-                                <span class="brand-label"><?php echo htmlentities($result->BrandName);?></span>
+                                <span class="brand-label">
+                                    <?php echo htmlentities($result->BrandName);?> 
+                                    <?php if($result->VehicleType) { echo " | " . htmlentities($result->VehicleType); } ?>
+                                </span>
                                 
                                 <div class="specs-row">
                                     <div class="specs-item"><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></div>
