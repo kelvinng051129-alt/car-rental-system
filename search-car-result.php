@@ -31,22 +31,46 @@ error_reporting(0);
             align-items: center;
             justify-content: center;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
         .page-header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 3.5rem;
             color: #fff;
             text-shadow: 0 5px 20px rgba(0,0,0,0.9);
+            margin-bottom: 10px;
         }
         .page-header span {
             color: #d4af37;
             font-size: 1.2rem;
             letter-spacing: 2px;
             text-transform: uppercase;
+            font-weight: 500;
         }
 
-        /* --- CAR CARD --- */
+        /* --- BACK BUTTON STYLE --- */
+        .btn-back-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: #111;
+        }
+        .btn-back-link:hover {
+            color: #000;
+            background: #d4af37;
+            border-color: #d4af37;
+            transform: translateX(-5px);
+        }
+        .btn-back-link i { margin-right: 10px; }
+
+        /* --- CAR CARD STYLING --- */
         .car-card {
             background: #181818;
             border: 1px solid #2a2a2a;
@@ -136,12 +160,29 @@ error_reporting(0);
         }
         .btn-view-arrow i { font-size: 0.7rem; margin-left: 5px; }
 
+        /* No Result Styling */
         .no-result-box {
             text-align: center;
-            padding: 50px;
-            border: 1px solid #333;
+            padding: 80px 20px;
+            border: 1px solid #2a2a2a;
             background: #111;
             margin-top: 20px;
+        }
+        .btn-gold-outline {
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            background: transparent;
+            padding: 10px 30px;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn-gold-outline:hover {
+            background: #d4af37;
+            color: #000;
         }
     </style>
 </head>
@@ -158,12 +199,24 @@ error_reporting(0);
 
     <section class="pb-5">
         <div class="container">
+            
+            <div class="row">
+                <div class="col-12">
+                    <a href="car-listing.php" class="btn-back-link">
+                        <i class="fa fa-arrow-left"></i> Back to Inventory
+                    </a>
+                </div>
+            </div>
+
             <div class="row g-4">
                 
                 <?php 
                 // --- SEARCH LOGIC ---
+                // Receive inputs from car-listing.php
                 $brand = $_POST['brand'];
                 $fueltype = $_POST['fueltype'];
+                // 🔥 Logic Fix Included (VehicleType)
+                $vehicletype = $_POST['vehicletype'];
 
                 // Start building the query
                 $sql = "SELECT tblvehicles.*, tblbrands.BrandName, tblbrands.id as bid FROM tblvehicles JOIN tblbrands ON tblbrands.id = tblvehicles.VehiclesBrand";
@@ -171,23 +224,30 @@ error_reporting(0);
                 $conditions = [];
                 $params = [];
 
-                // Check Brand Input (Ignore "All Brands")
+                // 1. Filter by Brand (Ignore if 'All Brands' or empty)
                 if ($brand != "All Brands" && $brand != "") {
                     $conditions[] = "tblvehicles.VehiclesBrand = :brand";
                     $params[':brand'] = $brand;
                 }
 
-                // Check Fuel Input (Ignore "All Types" or "All Fuel Types")
+                // 2. Filter by Fuel Type (Ignore if 'All Types' or empty)
                 if ($fueltype != "All Types" && $fueltype != "All Fuel Types" && $fueltype != "") {
                     $conditions[] = "tblvehicles.FuelType = :fueltype";
                     $params[':fueltype'] = $fueltype;
                 }
 
-                // Append WHERE clause if conditions exist
+                // 3. 🔥 Filter by Vehicle Type (Ignore if 'All Types')
+                if ($vehicletype != "All Types" && $vehicletype != "") {
+                    $conditions[] = "tblvehicles.VehicleType = :vehicletype";
+                    $params[':vehicletype'] = $vehicletype;
+                }
+
+                // Combine conditions with AND
                 if (count($conditions) > 0) {
                     $sql .= " WHERE " . implode(' AND ', $conditions);
                 }
 
+                // Execute Query
                 $query = $dbh->prepare($sql);
                 $query->execute($params);
                 $results = $query->fetchAll(PDO::FETCH_OBJ);
@@ -206,12 +266,15 @@ error_reporting(0);
                         
                         <div class="card-info">
                             <h4 class="car-name"><?php echo htmlentities($result->VehiclesTitle);?></h4>
-                            <span class="brand-label"><?php echo htmlentities($result->BrandName);?></span>
+                            <span class="brand-label">
+                                <?php echo htmlentities($result->BrandName);?> 
+                                <?php if($result->VehicleType) { echo " | " . htmlentities($result->VehicleType); } ?>
+                            </span>
                             
                             <div class="specs-row">
                                 <div class="specs-item"><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></div>
                                 <div class="specs-item"><i class="fa fa-gas-pump"></i> <?php echo htmlentities($result->FuelType);?></div>
-                                <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
+                                <div class="specs-item"><i class="fa fa-cogs"></i> <?php echo htmlentities($result->Transmission);?></div>
                             </div>
 
                             <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
@@ -228,8 +291,8 @@ error_reporting(0);
                         <div class="no-result-box">
                             <i class="fa fa-search fa-3x mb-3 text-muted"></i>
                             <h3 class="text-white">No Vehicles Found</h3>
-                            <p class="text-muted">We couldn't find any cars matching your criteria. Try selecting "All Brands" or different options.</p>
-                            <a href="car-listing.php" class="btn btn-gold mt-3" style="color: #fff; width: auto; padding: 10px 30px;">View All Cars</a>
+                            <p class="text-muted">We couldn't find any cars matching your specific criteria.</p>
+                            <a href="car-listing.php" class="btn-gold-outline">View All Vehicles</a>
                         </div>
                     </div>
                 <?php } ?>
