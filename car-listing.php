@@ -8,288 +8,361 @@ error_reporting(0);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Find a Car | Car Rental Portal</title>
+    <title>Premium Fleet | Car Rental Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f4f7f6;
+            background-color: #0f0f0f; /* Ultra Dark Background */
+            color: #fff;
         }
 
-        /* --- HERO BANNER (NEW IMAGE) --- */
-        .page-header {
-            /* New Image: A premium dark car on a road (High Quality Unsplash) 
-               Vibe: Moody, Luxurious, Travel
-            */
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=2070&auto=format&fit=crop');
+        /* --- 1. LUXURY HERO BANNER --- */
+        .hero-banner {
+            background-color: #000;
+            
+            /* Premium Dark Mercedes Image from Unsplash */
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(15,15,15,1) 100%), url('https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=2070&auto=format&fit=crop');
+            
             background-size: cover;
             background-position: center;
-            height: 400px; /* Made it slightly taller for better visual impact */
+            height: 600px; /* Tall height for impact */
             display: flex;
-            align-items: center;
+            align-items: flex-end; /* Align text to bottom */
             justify-content: center;
-            flex-direction: column;
-            color: white;
-            text-align: center;
-            margin-bottom: 50px;
             position: relative;
-        }
-        .page-header h1 { 
-            font-weight: 700; 
-            font-size: 3.5rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
-        }
-        .page-header p { 
-            font-size: 1.2rem; 
-            opacity: 0.9; 
-            font-weight: 300; 
-            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+            padding-bottom: 90px;
         }
 
-        /* --- FLOATING SEARCH BAR --- */
-        .search-wrapper {
-            margin-top: -80px; /* Pulls the box up */
-            margin-bottom: 40px;
+        .hero-content {
+            text-align: center;
+            z-index: 2;
+            animation: fadeInUp 1.2s cubic-bezier(0.2, 1, 0.2, 1);
+        }
+
+        .hero-content h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            color: #fff;
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+            text-shadow: 0 10px 40px rgba(0,0,0,0.9);
+        }
+        
+        .hero-content p {
+            font-size: 1.1rem;
+            color: #d4af37; /* Champagne Gold */
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+            text-shadow: 0 5px 20px rgba(0,0,0,0.9);
+            position: relative;
+            display: inline-block;
+        }
+        /* Gold Underline Decoration */
+        .hero-content p::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 2px;
+            background: #d4af37;
+            margin: 15px auto 0;
+        }
+
+        /* --- 2. FLOATING SEARCH BAR --- */
+        .search-container {
+            margin-top: -60px;
             position: relative;
             z-index: 10;
         }
+
         .search-box {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        /* --- CAR CARD DESIGN --- */
-        .car-card {
-            background: white;
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            height: 100%;
-        }
-        .car-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            background: rgba(35, 35, 35, 0.9); /* Dark Glass Effect */
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
         }
 
-        /* Image Container */
-        .img-container {
+        .form-label {
+            color: #aaa;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .form-select {
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid #555;
+            border-radius: 0;
+            color: #fff;
+            padding-left: 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .form-select:focus {
+            background-color: #1a1a1a;
+            color: #fff;
+            border-color: #d4af37;
+            box-shadow: none;
+        }
+
+        .btn-gold {
+            background: linear-gradient(45deg, #d4af37, #c5a028);
+            color: #000;
+            border: none;
+            width: 100%;
+            height: 55px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            margin-top: 24px;
+        }
+        .btn-gold:hover {
+            background: #fff;
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        /* --- 3. CAR LISTING CARDS --- */
+        .section-header {
+            text-align: left;
+            margin-bottom: 40px;
+            margin-top: 20px;
+            border-left: 3px solid #d4af37;
+            padding-left: 20px;
+        }
+        .section-header h3 {
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            font-size: 2.2rem;
+            margin: 0;
+        }
+        .section-header span {
+            color: #666;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .car-card {
+            background: #181818;
+            border: 1px solid #2a2a2a;
+            border-radius: 0; 
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.2, 1, 0.2, 1);
+            margin-bottom: 30px;
             position: relative;
-            height: 220px;
+        }
+        
+        .car-card:hover {
+            transform: translateY(-10px);
+            border-color: #444;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .img-wrapper {
+            position: relative;
+            height: 260px;
             overflow: hidden;
         }
-        /* Points to admin/img/vehicleimages/ */
-        .img-container img {
+        .img-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: 0.5s;
+            transition: transform 0.8s;
+            filter: brightness(0.9);
         }
-        .car-card:hover .img-container img { transform: scale(1.08); }
+        .car-card:hover .img-wrapper img {
+            transform: scale(1.08);
+            filter: brightness(1.1);
+        }
 
-        /* Price Tag Badge */
-        .price-tag {
+        .price-tag-floating {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: #f1c40f; /* AMG Gold */
-            color: #2c3e50;
-            padding: 6px 15px;
-            border-radius: 50px;
+            bottom: 0;
+            right: 0;
+            background: #d4af37;
+            color: #000;
+            padding: 8px 20px;
             font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 1rem;
         }
 
-        /* Card Content */
-        .card-body { padding: 25px; }
-        .car-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 5px; color: #2c3e50; }
-        .brand-name { color: #7f8c8d; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        .card-info {
+            padding: 30px;
+        }
 
-        /* Icons Grid */
-        .spec-grid {
+        .car-name {
+            color: #fff;
+            font-size: 1.5rem;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 5px;
+        }
+        
+        .brand-label {
+            color: #666;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 25px;
+        }
+
+        .specs-row {
             display: flex;
             justify-content: space-between;
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            color: #aaa;
+            font-size: 0.85rem;
         }
-        .spec-item {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #555;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        
+        .specs-item i {
+            color: #d4af37;
+            margin-right: 8px;
         }
-        .spec-item i { color: #2c3e50; font-size: 1rem; }
 
-        /* Button */
-        .btn-detail {
-            width: 100%;
-            background: #2c3e50;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: 0.3s;
-            text-decoration: none;
+        .btn-view-arrow {
             display: inline-block;
-            text-align: center;
+            margin-top: 25px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            border-bottom: 1px solid transparent;
         }
-        .btn-detail:hover { background: #f1c40f; color: #2c3e50; }
+        .btn-view-arrow:hover {
+            color: #d4af37;
+            border-bottom: 1px solid #d4af37;
+            padding-bottom: 3px;
+        }
+        .btn-view-arrow i { font-size: 0.7rem; margin-left: 5px; transition: 0.3s; }
+        .btn-view-arrow:hover i { margin-left: 10px; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <?php include('includes/header.php');?>
 
-    <div class="page-header">
-        <div class="container">
-            <h1>Find Your Car</h1>
-            <p>Browse our extensive fleet available for rent</p>
+    <section class="hero-banner">
+        <div class="hero-content">
+            <h1>Find Your Perfect Ride</h1>
+            <p>Elevate Your Journey</p>
         </div>
-    </div>
+    </section>
 
-    <div class="container search-wrapper">
+    <div class="container search-container">
         <div class="search-box">
             <form action="search-car-result.php" method="post">
-                <div class="row g-3 align-items-end">
-                    
+                <div class="row align-items-center g-4">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-muted text-uppercase small">Select Brand</label>
+                        <label class="form-label">Select Brand</label>
                         <select class="form-select" name="brand">
                             <option selected>All Brands</option>
                             <?php 
-                            // Fetch Brands from database
-                            $sql = "SELECT id, BrandName FROM tblbrands";
+                            $sql = "SELECT * from tblbrands";
                             $query = $dbh -> prepare($sql);
                             $query->execute();
                             $results=$query->fetchAll(PDO::FETCH_OBJ);
                             if($query->rowCount() > 0) {
                                 foreach($results as $result) { ?>  
-                                <option value="<?php echo htmlentities($result->id);?>">
-                                    <?php echo htmlentities($result->BrandName);?>
-                                </option>
+                                <option value="<?php echo htmlentities($result->id);?>"><?php echo htmlentities($result->BrandName);?></option>
                             <?php }} ?>
                         </select>
                     </div>
-
+                    
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-muted text-uppercase small">Fuel Type</label>
+                        <label class="form-label">Fuel Type</label>
                         <select class="form-select" name="fueltype">
-                            <option selected>All Fuel Types</option>
+                            <option selected>All Types</option>
                             <?php 
-                            // Fetch only existing fuel types
                             $sql_fuel = "SELECT DISTINCT FuelType FROM tblvehicles WHERE FuelType IS NOT NULL";
                             $query_fuel = $dbh -> prepare($sql_fuel);
                             $query_fuel->execute();
                             $results_fuel=$query_fuel->fetchAll(PDO::FETCH_OBJ);
                             if($query_fuel->rowCount() > 0) {
                                 foreach($results_fuel as $row) { ?>  
-                                <option value="<?php echo htmlentities($row->FuelType);?>">
-                                    <?php echo htmlentities($row->FuelType);?>
-                                </option>
+                                <option value="<?php echo htmlentities($row->FuelType);?>"><?php echo htmlentities($row->FuelType);?></option>
                             <?php }} ?>
                         </select>
                     </div>
 
                     <div class="col-md-4">
-                        <button type="submit" class="btn btn-detail mt-0">
-                            <i class="fa fa-search"></i> SEARCH NOW
-                        </button>
+                        <button type="submit" class="btn btn-gold">Find Vehicle</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <section class="pb-5">
+    <section class="py-5">
         <div class="container">
+            <div class="section-header">
+                <h3>Our Fleet</h3>
+                <span>Curated for Excellence</span>
+            </div>
+
             <div class="row g-4">
-                
                 <?php 
-                // SQL Query: Fetch Vehicles + Brand Name
-                $sql = "SELECT tblvehicles.*, tblbrands.BrandName, tblbrands.id as bid 
-                        FROM tblvehicles 
-                        JOIN tblbrands ON tblbrands.id = tblvehicles.VehiclesBrand 
-                        ORDER BY tblvehicles.id DESC";
-                        
+                // Fetch vehicles from database
+                $sql = "SELECT tblvehicles.*,tblbrands.BrandName,tblbrands.id as bid from tblvehicles join tblbrands on tblbrands.id=tblvehicles.VehiclesBrand order by tblvehicles.id desc";
                 $query = $dbh -> prepare($sql);
                 $query->execute();
                 $results=$query->fetchAll(PDO::FETCH_OBJ);
 
-                if($query->rowCount() > 0)
-                {
-                    foreach($results as $result)
-                    {  
-                ?>
-                <div class="col-lg-4 col-md-6">
-                    <div class="card car-card">
-                        <div class="img-container">
-                            <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Car Image" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
-                            <div class="price-tag">
-                                RM <?php echo htmlentities($result->PricePerDay);?> / Day
+                if($query->rowCount() > 0) {
+                    foreach($results as $result) { ?>
+                    
+                    <div class="col-lg-4 col-md-6">
+                        <div class="car-card">
+                            <div class="img-wrapper">
+                                <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" alt="Car Image" onerror="this.src='https://placehold.co/600x400/222/fff?text=No+Image'">
+                                <div class="price-tag-floating">RM <?php echo htmlentities($result->PricePerDay);?> / Day</div>
                             </div>
-                        </div>
+                            
+                            <div class="card-info">
+                                <h4 class="car-name"><?php echo htmlentities($result->VehiclesTitle);?></h4>
+                                <span class="brand-label"><?php echo htmlentities($result->BrandName);?></span>
+                                
+                                <div class="specs-row">
+                                    <div class="specs-item"><i class="fa fa-calendar"></i> <?php echo htmlentities($result->ModelYear);?></div>
+                                    <div class="specs-item"><i class="fa fa-gas-pump"></i> <?php echo htmlentities($result->FuelType);?></div>
+                                    <div class="specs-item"><i class="fa fa-chair"></i> <?php echo htmlentities($result->SeatingCapacity);?> Seats</div>
+                                </div>
 
-                        <div class="card-body">
-                            <h5 class="car-title">
-                                <?php echo htmlentities($result->VehiclesTitle);?>
-                            </h5>
-                            <span class="brand-name">
-                                <i class="fa fa-tag"></i> <?php echo htmlentities($result->BrandName);?>
-                            </span>
-
-                            <div class="spec-grid">
-                                <div class="spec-item">
-                                    <i class="fa fa-calendar-alt"></i>
-                                    <span><?php echo htmlentities($result->ModelYear);?></span>
-                                </div>
-                                <div class="spec-item">
-                                    <i class="fa fa-gas-pump"></i>
-                                    <span><?php echo htmlentities($result->FuelType);?></span>
-                                </div>
-                                <div class="spec-item">
-                                    <i class="fa fa-chair"></i>
-                                    <span><?php echo htmlentities($result->SeatingCapacity);?> Seats</span>
-                                </div>
+                                <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn-view-arrow">
+                                    View Details <i class="fa fa-arrow-right"></i>
+                                </a>
                             </div>
-
-                            <p class="text-muted small mb-4">
-                                <?php echo substr($result->VehiclesOverview,0,70);?>...
-                            </p>
-
-                            <a href="vehical-details.php?vhid=<?php echo htmlentities($result->id);?>" class="btn btn-detail">
-                                View Details <i class="fa fa-arrow-right ms-1"></i>
-                            </a>
                         </div>
                     </div>
-                </div>
-                <?php 
-                    } 
-                } else { 
-                ?>
-                    <div class="col-12 text-center my-5">
-                        <div class="p-5 bg-white rounded shadow-sm border">
-                            <h3 class="text-muted"><i class="fa fa-car-crash display-4 mb-3"></i><br>No Vehicles Found</h3>
-                            <p>We couldn't find any cars listed at the moment.</p>
+
+                <?php }} else { ?>
+                    <div class="col-12 text-center text-white py-5">
+                        <div style="opacity: 0.5;">
+                            <i class="fa fa-car fa-3x mb-3"></i>
+                            <h4>Inventory Updating...</h4>
+                            <p>We are currently updating our fleet. Please check back soon.</p>
                         </div>
                     </div>
                 <?php } ?>
-
             </div>
         </div>
     </section>
