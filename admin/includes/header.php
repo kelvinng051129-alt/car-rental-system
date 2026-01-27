@@ -8,7 +8,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #2c3e50; padding: 15px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
   <div class="container">
     <a class="navbar-brand fw-bold" href="dashboard.php" style="font-size: 1.5rem; color: #fff;">
-      <i class="fa fa-car"></i> Car Rental Admin
+      <i class="fa fa-car"></i> Buat Kerja Betul2 Car Rental Admin
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
