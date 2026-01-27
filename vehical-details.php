@@ -464,11 +464,7 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
-<<<<<<< HEAD
                             <a href="login.php" class="login-link-btn">Login to Book</a>
-=======
-                            <a href="#loginform" class="login-link-btn" data-bs-toggle="modal" data-bs-target="#loginform">Login to Book</a>
->>>>>>> 3b796ed789fe39938e2082bfce598b9ce2112e4c
                         <?php } ?>
                     </form>
 
