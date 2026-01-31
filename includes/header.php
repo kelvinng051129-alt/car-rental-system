@@ -35,6 +35,11 @@ function navActive($page, $currentPage) {
           <a class="nav-link <?php echo navActive('contact.php', $currentPage); ?>" href="contact.php">Contact Us</a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('customer-review.php', $currentPage); ?>" href="customer-review.php">Customer Review</a>
+        </li>
+
+
         <?php if(strlen($_SESSION['login'])==0) { ?>
           <li class="nav-item ms-3">
             <a class="btn btn-outline-warning btn-sm" href="login.php">Login / Register</a>
