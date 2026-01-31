@@ -17,7 +17,7 @@ else{
         $eid = intval($_GET['eid']);
         $status = 2; // 2 = Cancelled
 
-        // Check for Refund Logic
+        // Check Payment Status
         $sqlCheck = "SELECT payment_status FROM tblbooking WHERE id=:eid";
         $queryCheck = $dbh->prepare($sqlCheck);
         $queryCheck->bindParam(':eid', $eid, PDO::PARAM_STR);
@@ -26,9 +26,10 @@ else{
 
         $new_payment_status = $resultCheck->payment_status; 
 
+        // If Paid (1), set to Refund Processing (2)
         if($resultCheck->payment_status == 1) {
-            $new_payment_status = 2; // Set to Refunded
-            $msg = "Booking Cancelled and marked as REFUNDED!";
+            $new_payment_status = 2; 
+            $msg = "Booking Cancelled. Payment marked as REFUND PROCESSING.";
         } else {
             $msg = "Booking Successfully Cancelled";
         }
@@ -56,6 +57,19 @@ else{
         $query->execute();
         $msg = "Booking Successfully Confirmed";
     }
+
+    // ==========================================
+    // 3. Handle: Complete Refund
+    // ==========================================
+    if(isset($_REQUEST['refid']))
+    {
+        $refid = intval($_GET['refid']);
+        $sql = "UPDATE tblbooking SET payment_status=3 WHERE id=:refid";
+        $query = $dbh->prepare($sql);
+        $query->bindParam(':refid', $refid, PDO::PARAM_STR);
+        $query->execute();
+        $msg = "Refund Marked as COMPLETED!";
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,21 +91,21 @@ else{
         
         .badge-status { padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
         
-        /* Payment Status Colors */
         .bg-unpaid { background-color: #ffeeba; color: #856404; }
         .bg-paid { background-color: #d1e7dd; color: #0f5132; }
-        .bg-refunded { background-color: #e2e3e5; color: #383d41; text-decoration: line-through; } 
+        .bg-processing { background-color: #ffdf7e; color: #856404; border:1px solid #ffeeba; }
+        .bg-refunded { background-color: #343a40; color: #fff; }
 
-        /* Booking Status Colors */
         .bg-pending { background-color: #fff3cd; color: #856404; }
         .bg-confirmed { background-color: #d1e7dd; color: #0f5132; }
         .bg-cancelled { background-color: #f8d7da; color: #842029; }
 
         .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; transition: 0.3s; border: none; margin-right: 5px; text-decoration: none; cursor: pointer; }
         .btn-confirm { background-color: #e7f1ff; color: #0d6efd; }
-        .btn-confirm:hover { background-color: #0d6efd; color: white; transform: translateY(-2px); }
         .btn-cancel { background-color: #ffeaea; color: #e74c3c; }
-        .btn-cancel:hover { background-color: #e74c3c; color: white; transform: translateY(-2px); }
+        
+        .btn-refund { width: auto; padding: 4px 10px; background-color: #343a40; color: #fff; font-size: 0.75rem; font-weight: bold; border-radius: 4px; text-decoration: none; display: inline-block; transition: 0.2s; }
+        .btn-refund:hover { background-color: #000; color: #fff; }
     </style>
 </head>
 <body>
@@ -129,17 +143,16 @@ else{
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Vehicle</th>
-                                <th>From / To</th>
-                                <th>Total Days</th>
+                                <th>Dates</th>
+                                <th>Total</th>
                                 <th>Payment</th>
                                 <th>Status</th>
-                                <th>Date</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            $sql = "SELECT tblusers.FullName,tblbrands.BrandName,tblvehicles.VehiclesTitle,tblbooking.FromDate,tblbooking.ToDate,tblbooking.message,tblbooking.VehicleId as vid,tblbooking.Status,tblbooking.PostingDate,tblbooking.id,tblbooking.payment_status, DATEDIFF(tblbooking.ToDate,tblbooking.FromDate) as totaldays  
+                            $sql = "SELECT tblusers.FullName,tblbrands.BrandName,tblvehicles.VehiclesTitle,tblbooking.FromDate,tblbooking.ToDate,tblbooking.message,tblbooking.VehicleId as vid,tblbooking.Status,tblbooking.PostingDate,tblbooking.id,tblbooking.payment_status, DATEDIFF(tblbooking.ToDate,tblbooking.FromDate) as totaldays, tblvehicles.PricePerDay  
                                     FROM tblbooking 
                                     JOIN tblvehicles ON tblvehicles.id=tblbooking.VehicleId 
                                     JOIN tblusers ON tblusers.EmailId=tblbooking.userEmail 
@@ -153,16 +166,17 @@ else{
                             if($query->rowCount() > 0) {
                                 foreach($results as $result) { 
                                     $days = ($result->totaldays == 0) ? 1 : $result->totaldays;
+                                    $total = $days * $result->PricePerDay;
                             ?>
                                 <tr>
                                     <td><?php echo htmlentities($cnt);?></td>
                                     <td><?php echo htmlentities($result->FullName);?></td>
-                                    <td><a href="../vehical-details.php?vhid=<?php echo htmlentities($result->vid);?>" target="_blank" class="text-decoration-none fw-bold text-dark"><?php echo htmlentities($result->BrandName);?> , <?php echo htmlentities($result->VehiclesTitle);?></a></td>
+                                    <td><a href="../vehical-details.php?vhid=<?php echo htmlentities($result->vid);?>" target="_blank" class="fw-bold text-dark"><?php echo htmlentities($result->BrandName);?> <?php echo htmlentities($result->VehiclesTitle);?></a></td>
                                     <td>
-                                        <div class="small text-muted"><?php echo htmlentities($result->FromDate);?></div>
-                                        <div class="small text-muted"><?php echo htmlentities($result->ToDate);?></div>
+                                        <small class="d-block text-muted">From: <?php echo htmlentities($result->FromDate);?></small>
+                                        <small class="d-block text-muted">To: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo htmlentities($result->ToDate);?></small>
                                     </td>
-                                    <td><?php echo htmlentities($days);?> Days</td>
+                                    <td>RM <?php echo number_format($total,2);?></td>
                                     
                                     <td>
                                         <?php if($result->payment_status == 0) { ?>
@@ -170,6 +184,8 @@ else{
                                         <?php } else if($result->payment_status == 1) { ?>
                                             <span class="badge badge-status bg-paid">Paid</span>
                                         <?php } else if($result->payment_status == 2) { ?>
+                                            <span class="badge badge-status bg-processing">Processing Refund</span>
+                                        <?php } else if($result->payment_status == 3) { ?>
                                             <span class="badge badge-status bg-refunded">Refunded</span>
                                         <?php } ?>
                                     </td>
@@ -185,25 +201,25 @@ else{
                                         <?php } ?>
                                     </td>
                                     
-                                    <td class="small text-muted"><?php echo htmlentities($result->PostingDate);?></td>
-                                    
                                     <td class="text-center">
-                                        <?php if($result->Status != 2) { ?>
-                                            
-                                            <a href="javascript:void(0);" 
-                                               onclick="confirmAction('confirm', 'manage-bookings.php?aeid=<?php echo htmlentities($result->id);?>')" 
-                                               class="btn-action btn-confirm" title="Confirm">
-                                                <i class="fa fa-check"></i>
-                                            </a>
-
-                                            <a href="javascript:void(0);" 
-                                               onclick="confirmAction('cancel', 'manage-bookings.php?eid=<?php echo htmlentities($result->id);?>')" 
-                                               class="btn-action btn-cancel" title="Cancel">
-                                                <i class="fa fa-times"></i>
-                                            </a>
-
+                                        <?php if($result->Status == 0) { ?>
+                                            <a href="javascript:void(0);" onclick="confirmAction('confirm', 'manage-bookings.php?aeid=<?php echo htmlentities($result->id);?>')" class="btn-action btn-confirm" title="Confirm"><i class="fa fa-check"></i></a>
+                                            <a href="javascript:void(0);" onclick="confirmAction('cancel', 'manage-bookings.php?eid=<?php echo htmlentities($result->id);?>')" class="btn-action btn-cancel" title="Cancel"><i class="fa fa-times"></i></a>
+                                        
+                                        <?php } else if($result->Status == 1) { ?>
+                                            <a href="javascript:void(0);" onclick="confirmAction('cancel', 'manage-bookings.php?eid=<?php echo htmlentities($result->id);?>')" class="btn-action btn-cancel" title="Cancel"><i class="fa fa-times"></i></a>
+                                        
                                         <?php } else { ?>
-                                            <span class="text-muted small">Closed</span>
+                                            <?php } ?>
+
+                                        <?php if($result->payment_status == 2) { ?>
+                                            <div class="mt-1">
+                                                <a href="javascript:void(0);" 
+                                                   onclick="confirmAction('refund', 'manage-bookings.php?refid=<?php echo htmlentities($result->id);?>')" 
+                                                   class="btn-refund">
+                                                   Complete Refund
+                                                </a>
+                                            </div>
                                         <?php } ?>
                                     </td>
                                 </tr>
@@ -220,35 +236,31 @@ else{
 
     <script>
         function confirmAction(type, url) {
-            let title = '';
-            let text = '';
-            let btnColor = '';
-            let btnText = '';
+            let title = '', text = '', btnColor = '', btnText = '';
 
             if (type === 'cancel') {
                 title = 'Cancel Booking?';
-                text = 'If the user has paid, it will be marked as REFUNDED.';
+                text = 'If Paid, status will change to Refund Processing.';
                 btnColor = '#d33';
                 btnText = 'Yes, Cancel it!';
-            } else {
+            } else if (type === 'confirm') {
                 title = 'Confirm Booking?';
-                text = 'Are you sure you want to approve this booking?';
+                text = 'Approve this booking?';
                 btnColor = '#3085d6';
-                btnText = 'Yes, Confirm it!';
+                btnText = 'Yes, Confirm!';
+            } else if (type === 'refund') {
+                title = 'Mark Refund Complete?';
+                text = 'Confirm that you have manually returned the money.';
+                btnColor = '#343a40';
+                btnText = 'Yes, Refunded!';
             }
 
             Swal.fire({
-                title: title,
-                text: text,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: btnColor,
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: btnText
+                title: title, text: text, icon: 'warning',
+                showCancelButton: true, confirmButtonColor: btnColor,
+                cancelButtonColor: '#6c757d', confirmButtonText: btnText
             }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = url;
-                }
+                if (result.isConfirmed) window.location.href = url;
             });
         }
     </script>

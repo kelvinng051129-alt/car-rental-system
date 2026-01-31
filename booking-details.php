@@ -10,7 +10,6 @@ if(strlen($_SESSION['login'])==0)
 else
 {
     $bkid = intval($_GET['bkid']);
-    // Security check: only allow own bookings
     $useremail = $_SESSION['login'];
 }
 ?>
@@ -63,7 +62,8 @@ else
 
         .pay-unpaid { color: #e74c3c; font-weight: bold; }
         .pay-paid { color: #27ae60; font-weight: bold; }
-        .pay-refunded { color: #aaa; text-decoration: line-through; font-weight: bold; }
+        .pay-processing { color: #f1c40f; font-weight: bold; }
+        .pay-refunded { color: #888; font-weight: bold; text-decoration: line-through; }
     </style>
 </head>
 <body>
@@ -143,7 +143,11 @@ else
                                     } else if($result->payment_status==1) {
                                         echo '<span class="pay-paid">PAID <i class="fa fa-check-circle"></i></span>';
                                     } else if($result->payment_status==2) {
-                                        echo '<span class="pay-refunded">REFUNDED</span> <span class="text-danger small">(Processing)</span>';
+                                        // 🔥 Status 2: Processing
+                                        echo '<span class="pay-processing">REFUND PROCESSING...</span>';
+                                    } else if($result->payment_status==3) {
+                                        // 🔥 Status 3: Completed
+                                        echo '<span class="pay-refunded">REFUNDED (COMPLETED)</span>';
                                     }
                                     ?>
                                 </span>
@@ -172,8 +176,14 @@ else
                             <?php } ?>
 
                             <?php if($result->Status == 2 && $result->payment_status == 2) { ?>
-                                <div class="alert alert-warning mt-3 mb-0" role="alert" style="font-size: 0.85rem;">
-                                    <i class="fa fa-info-circle"></i> <strong>Notice:</strong> Your booking was cancelled after payment. The system has marked this for <strong>Refund</strong>. Please contact support if you do not receive it within 3 business days.
+                                <div class="alert alert-warning mt-3 mb-0" role="alert">
+                                    <i class="fa fa-clock"></i> <strong>Refund in Progress:</strong> Your booking was cancelled. We are processing your refund.
+                                </div>
+                            <?php } ?>
+
+                            <?php if($result->Status == 2 && $result->payment_status == 3) { ?>
+                                <div class="alert alert-secondary mt-3 mb-0" role="alert" style="background:#333; color:#aaa; border-color:#444;">
+                                    <i class="fa fa-check-circle"></i> <strong>Refund Completed:</strong> The amount has been returned to your account.
                                 </div>
                             <?php } ?>
 
