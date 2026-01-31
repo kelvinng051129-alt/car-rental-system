@@ -63,7 +63,7 @@ else
         .pay-unpaid { color: #e74c3c; font-weight: bold; }
         .pay-paid { color: #27ae60; font-weight: bold; }
         .pay-processing { color: #f1c40f; font-weight: bold; }
-        .pay-refunded { color: #888; font-weight: bold; text-decoration: line-through; }
+        .pay-refunded { color: #2ecc71; font-weight: bold; text-decoration: line-through; } 
     </style>
 </head>
 <body>
@@ -143,10 +143,8 @@ else
                                     } else if($result->payment_status==1) {
                                         echo '<span class="pay-paid">PAID <i class="fa fa-check-circle"></i></span>';
                                     } else if($result->payment_status==2) {
-                                        // 🔥 Status 2: Processing
                                         echo '<span class="pay-processing">REFUND PROCESSING...</span>';
                                     } else if($result->payment_status==3) {
-                                        // 🔥 Status 3: Completed
                                         echo '<span class="pay-refunded">REFUNDED (COMPLETED)</span>';
                                     }
                                     ?>
@@ -182,8 +180,10 @@ else
                             <?php } ?>
 
                             <?php if($result->Status == 2 && $result->payment_status == 3) { ?>
-                                <div class="alert alert-secondary mt-3 mb-0" role="alert" style="background:#333; color:#aaa; border-color:#444;">
-                                    <i class="fa fa-check-circle"></i> <strong>Refund Completed:</strong> The amount has been returned to your account.
+                                <div class="alert mt-3 mb-0" role="alert" 
+                                     style="background: #333; border: 1px solid #444; color: #d4af37;">
+                                    <i class="fa fa-check-circle" style="color: #2ecc71;"></i> 
+                                    <strong>Refund Completed:</strong> The amount has been returned to your account.
                                 </div>
                             <?php } ?>
 
