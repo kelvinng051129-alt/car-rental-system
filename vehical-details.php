@@ -495,7 +495,12 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
-                            <a href="#loginform" class="login-link-btn" data-bs-toggle="modal" data-bs-target="#loginform">Login to Book</a>
+                                <?php
+                                $redirect = "vehical-details.php?vhid=" . urlencode($_GET['vhid'] ?? '');
+                                ?>
+                                <a href="login.php?redirect=<?php echo urlencode($redirect); ?>" class="login-link-btn">
+                                Login to Book
+                                </a>
                         <?php } ?>
                     </form>
 

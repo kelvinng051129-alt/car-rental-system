@@ -3,13 +3,22 @@ session_start();
 include('includes/config.php');
 error_reporting(0);
 
-// If already logged in, go home
+$redirect = $_GET['redirect'] ?? 'index.php';
+if (preg_match('/^(https?:)?\/\//i', $redirect)) {
+    $redirect = 'index.php';
+}
+
 if (isset($_SESSION['login']) && strlen($_SESSION['login']) > 0) {
-    header('Location: index.php');
+    header('Location: ' . $redirect);
     exit;
 }
 
+
 $errMsg = '';
+$redirect = $_GET['redirect'] ?? 'index.php';
+if (preg_match('/^(https?:)?\/\//i', $redirect)) {
+    $redirect = 'index.php';
+}
 $loginSuccess = false;
 $welcomeName = '';
 
@@ -253,7 +262,8 @@ if (isset($_POST['login'])) {
       showConfirmButton: false,
       heightAuto: false
   }).then(() => {
-      window.location.href = 'index.php';
+      window.location.href = '<?php echo addslashes($redirect); ?>';
+
   });
 </script>
 <?php } ?>
