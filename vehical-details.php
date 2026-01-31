@@ -1,17 +1,15 @@
 <?php 
 session_start();
-// 🔥 修复：强制使用绝对路径加载数据库配置，防止报错
 require_once(__DIR__ . '/includes/config.php');
 error_reporting(0);
 
 $booking_status = ""; 
-$review_status = ""; // 用于评价功能的弹窗状态
+$review_status = ""; 
 
-// 1. 获取车辆 ID
 $vhid = intval($_GET['vhid']);
 
 // ===========================
-//  LOGIC 1: 提交评价 (SUBMIT REVIEW)
+//  LOGIC 1: SUBMIT REVIEW
 // ===========================
 if (isset($_POST['submit_review'])) {
     if (empty($_SESSION['login'])) {
@@ -20,11 +18,11 @@ if (isset($_POST['submit_review'])) {
         $rating  = (int)($_POST['rating'] ?? 0);
         $comment = trim($_POST['comment'] ?? "");
 
-        // 简单验证
+
         if ($rating < 1 || $rating > 5 || $comment === "") {
             $review_status = "invalid";
         } else {
-            // 插入评价到数据库 (对接你的 tblreviews 表结构)
+        
             $sql = "INSERT INTO tblreviews (VehicleId, userEmail, rating, comment, status)
                     VALUES (:vhid, :email, :rating, :comment, 1)";
             $stmt = $dbh->prepare($sql);
@@ -43,7 +41,7 @@ if (isset($_POST['submit_review'])) {
 }
 
 // ===========================
-//  LOGIC 2: 提交预订 (BOOKING)
+//  LOGIC 2: BOOKING
 // ===========================
 if(isset($_POST['submit']))
 {
