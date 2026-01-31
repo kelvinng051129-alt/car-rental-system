@@ -1,321 +1,192 @@
-<?php
+<?php 
 session_start();
-require_once __DIR__ . '/includes/config.php';
+include('includes/config.php');
 error_reporting(0);
 
-if (empty($_SESSION['login'])) {
-  header("Location: index.php");
-  exit();
+if(strlen($_SESSION['login'])==0)
+{   
+    header('location:index.php');
 }
-
-$useremail = $_SESSION['login'];
-$bkid = isset($_GET['bkid']) ? (int)$_GET['bkid'] : 0;
-
-if ($bkid <= 0) {
-  header("Location: my-booking.php");
-  exit();
+else
+{
+    $bkid = intval($_GET['bkid']);
+    // Security check: only allow own bookings
+    $useremail = $_SESSION['login'];
 }
-
-$sql = "SELECT 
-          b.id AS bookingId,
-          b.userEmail,
-          b.VehicleId,
-          b.FromDate,
-          b.ToDate,
-          b.message,
-          b.Status,
-          b.PostingDate,
-          b.payment_status,
-          v.VehiclesTitle,
-          v.PricePerDay,
-          v.SecurityDeposit,
-          v.FuelType,
-          v.ModelYear,
-          v.SeatingCapacity,
-          v.Transmission,
-          v.Vimage1,
-          br.BrandName
-        FROM tblbooking b
-        JOIN tblvehicles v ON v.id = b.VehicleId
-        JOIN tblbrands br ON br.id = v.VehiclesBrand
-        WHERE b.id = :bkid AND b.userEmail = :useremail
-        LIMIT 1";
-
-$q = $dbh->prepare($sql);
-$q->bindParam(':bkid', $bkid, PDO::PARAM_INT);
-$q->bindParam(':useremail', $useremail, PDO::PARAM_STR);
-$q->execute();
-$bk = $q->fetch(PDO::FETCH_OBJ);
-
-if (!$bk) {
-  header("Location: my-booking.php");
-  exit();
-}
-$from = new DateTime($bk->FromDate);
-$to   = new DateTime($bk->ToDate);
-$days = (int)$from->diff($to)->days;
-if ($days < 1) $days = 1;
-
-$total = $days * (float)$bk->PricePerDay;
-
-function bookingStatusText($s) {
-  $s=(int)$s;
-  if ($s===1) return "Confirmed";
-  if ($s===2) return "Cancelled";
-  return "Pending";
-}
-function bookingStatusClass($s) {
-  $s=(int)$s;
-  if ($s===1) return "badge-confirmed";
-  if ($s===2) return "badge-cancelled";
-  return "badge-pending";
-}
-function payText($p) { return ((int)$p===1) ? "Paid" : "Unpaid"; }
-function payClass($p) { return ((int)$p===1) ? "badge-paid" : "badge-unpaid"; }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Booking Details - Buat Kerja Betul2 Car Rental</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Booking Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0f0f0f; color: #fff; }
+        
+        .page-header {
+            background-color: #000;
+            padding: 100px 0 50px;
+            text-align: center;
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(15,15,15,1)), url('admin/img/vehicleimages/background.jpg');
+            background-size: cover;
+        }
+        .page-header h1 { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 3rem; }
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+        .booking-card {
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 0;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        .section-title { font-family: 'Playfair Display', serif; color: #fff; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+        .info-label { color: #888; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .info-value { color: #fff; font-weight: 500; text-align: right; }
+        .info-value.gold { color: #d4af37; font-weight: 700; font-size: 1.1rem; }
 
-  <style>
-    body {
-       font-family:'Poppins',sans-serif; background:#0f0f0f; color:#fff; 
-      }
+        .btn-pay {
+            background: linear-gradient(45deg, #d4af37, #c5a028);
+            color: #000; border: none; width: 100%; padding: 15px; font-weight: bold; text-transform: uppercase; margin-top: 20px;
+        }
+        .btn-pay:hover { background: #fff; color: #000; }
 
-    .page-hero{
-      background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.9)),
-      url('https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?q=80&w=2070&auto=format&fit=crop');
-      background-size:cover; background-position:center;
-      height:38vh; display:flex; align-items:center; justify-content:center;
-      text-align:center;
-    }
-    .hero-title{
-      font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:0 0 8px; text-shadow:0 10px 30px rgba(0,0,0,.8); 
-      }
+        /* Status Badges */
+        .status-badge { padding: 5px 10px; font-size: 0.8rem; border-radius: 2px; font-weight: bold; text-transform: uppercase; }
+        .status-pending { background: #333; color: #f1c40f; border: 1px solid #f1c40f; }
+        .status-confirmed { background: #0f5132; color: #fff; border: 1px solid #0f5132; }
+        .status-cancelled { background: #842029; color: #fff; border: 1px solid #842029; }
 
-    .hero-subtitle{ 
-      font-size:.95rem; color:#d4af37; letter-spacing:3px; text-transform:uppercase; margin:0; 
-    }
-
-    .section-divider{ 
-      width:60px; height:2px; background:#d4af37; margin:16px auto 0; border:none; 
-    }
-
-    .dark-card{
-      background:#181818; border:1px solid #2a2a2a; border-radius:0;
-      box-shadow:0 10px 30px rgba(0,0,0,.3);
-    }
-
-    .img-wrap{ 
-      height:260px; background:#111; overflow:hidden; border:1px solid #2a2a2a; 
-    }
-
-    .img-wrap img{ 
-      width:100%; height:100%; object-fit:cover; filter:brightness(.92); 
-    }
-
-    .label{ 
-      color:#aaa; text-transform:uppercase; letter-spacing:1px; font-size:.82rem; 
-    }
-
-    .value{ 
-      font-weight:600; 
-    }
-
-    .badge-pending, .badge-confirmed, .badge-cancelled, .badge-paid, .badge-unpaid{
-      padding:6px 10px; font-size:.78rem; border-radius:0;
-      text-transform:uppercase; letter-spacing:1px; white-space:nowrap;
-      border:1px solid transparent;
-      display:inline-block;
-    }
-
-    .badge-pending{ 
-      color:#d4af37; background:rgba(212,175,55,.12); border-color:rgba(212,175,55,.35); 
-    }
-
-    .badge-confirmed{
-      color:#27ae60; background:rgba(39,174,96,.12); border-color:rgba(39,174,96,.35); 
-      }
-
-    .badge-cancelled{
-      color:#e74c3c; background:rgba(231,76,60,.12); border-color:rgba(231,76,60,.35); 
-      }
-
-    .badge-paid{ 
-      color:#27ae60; background:rgba(39,174,96,.12); border-color:rgba(39,174,96,.35); 
-    }
-
-    .badge-unpaid{ 
-      color:#d4af37; background:rgba(212,175,55,.10); border-color:rgba(212,175,55,.30); 
-    }
-
-    .btn-outline-gold{
-      border:1px solid #555; color:#fff;
-      padding:10px 14px;
-      text-transform:uppercase; font-size:.8rem; letter-spacing:1px;
-      transition:.3s; text-decoration:none; display:inline-block; border-radius:0;
-    }
-
-    .btn-outline-gold:hover{ 
-      background:#d4af37; border-color:#d4af37; color:#000; 
-    }
-
-    .btn-gold{
-      background: linear-gradient(45deg, #d4af37, #c5a028);
-      color:#000;
-      padding:10px 14px;
-      text-transform:uppercase;
-      font-size:.8rem;
-      letter-spacing:1px;
-      font-weight:700;
-      border:none;
-      border-radius:0;
-      transition:.3s;
-      text-decoration:none;
-      display:inline-block;
-    }
-
-    .btn-gold:hover{
-      background:#fff;
-      color:#000;
-      box-shadow:0 10px 20px rgba(212,175,55,.3);
-      transform:translateY(-2px);
-    }
-
-    .line{ 
-      border-top:1px solid #2a2a2a; margin:18px 0; 
-    }
-  </style>
+        .pay-unpaid { color: #e74c3c; font-weight: bold; }
+        .pay-paid { color: #27ae60; font-weight: bold; }
+        .pay-refunded { color: #aaa; text-decoration: line-through; font-weight: bold; }
+    </style>
 </head>
 <body>
-<?php include(__DIR__ . '/includes/header.php'); ?>
-<section class="page-hero">
-  <div class="container">
-    <h1 class="hero-title">Booking Details</h1>
-    <p class="hero-subtitle">Booking ID #<?php echo htmlentities($bk->bookingId); ?></p>
-    <hr class="section-divider">
-  </div>
-</section>
 
-<section class="py-5">
-  <div class="container">
+    <?php include('includes/header.php');?>
 
-    <a class="btn-outline-gold mb-4" href="my-booking.php">
-      <i class="fa fa-arrow-left"></i> Back to My Bookings
-    </a>
-
-    <div class="row g-4">
-
-      <!-- Left card -->
-      <div class="col-lg-5">
-        <div class="dark-card p-3">
-          <div class="img-wrap mb-3">
-            <img src="admin/img/vehicleimages/<?php echo htmlentities($bk->Vimage1); ?>"
-                 onerror="this.src='https://placehold.co/900x600/222/fff?text=No+Image';">
-          </div>
-
-          <div class="px-2 pb-2">
-            <div class="label">Vehicle</div>
-            <div class="value" style="font-family:'Playfair Display'; font-size:1.5rem;">
-              <?php echo htmlentities($bk->BrandName.' '.$bk->VehiclesTitle); ?>
-            </div>
-
-            <div class="line"></div>
-
-            <div class="d-flex justify-content-between">
-              <div>
-                <div class="label">Daily Rate</div>
-                <div class="value">RM <?php echo htmlentities($bk->PricePerDay); ?></div>
-              </div>
-
-              <div class="text-end">
-                <div class="label">Deposit</div>
-                <div class="value">RM <?php echo htmlentities($bk->SecurityDeposit); ?></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right card -->
-      <div class="col-lg-7">
-        <div class="dark-card p-4 p-md-5">
-
-          <div class="d-flex justify-content-between mb-3">
-
-            <div>
-              <div class="label">Status</div>
-              <span class="<?php echo bookingStatusClass($bk->Status); ?>">
-                <?php echo bookingStatusText($bk->Status); ?>
-              </span>
-            </div>
-
-            <div class="text-md-end">
-              <div class="label">Payment</div>
-              <span class="<?php echo payClass($bk->payment_status); ?>">
-                <?php echo payText($bk->payment_status); ?>
-              </span>
-
-              <?php if ((int)$bk->payment_status === 0 && (int)$bk->Status !== 2) { ?>
-                <div class="mt-2">
-                  <a class="btn-gold" href="payment.php?bkid=<?php echo urlencode($bk->bookingId); ?>">
-                    <i class="fa fa-credit-card"></i> Make Payment
-                  </a>
-                </div>
-              <?php } ?>
-            </div>
-
-          </div>
-
-          <div class="line"></div>
-
-          <div class="row g-3">
-            <div class="col-md-6"><div class="label">From</div><div class="value"><?php echo $bk->FromDate; ?></div></div>
-            <div class="col-md-6"><div class="label">To</div><div class="value"><?php echo $bk->ToDate; ?></div></div>
-            <div class="col-md-6"><div class="label">Days</div><div class="value"><?php echo $days; ?></div></div>
-            <div class="col-md-6"><div class="label">Booked On</div><div class="value"><?php echo $bk->PostingDate; ?></div></div>
-          </div>
-
-          <div class="line"></div>
-
-          <div class="row g-3">
-            <div class="col-md-4"><div class="label">Fuel</div><div class="value"><?php echo $bk->FuelType; ?></div></div>
-            <div class="col-md-4"><div class="label">Seats</div><div class="value"><?php echo $bk->SeatingCapacity; ?></div></div>
-            <div class="col-md-4"><div class="label">Year</div><div class="value"><?php echo $bk->ModelYear; ?></div></div>
-          </div>
-
-          <div class="line"></div>
-
-          <div class="p-3" style="background:#121212; border:1px solid #2a2a2a;">
-            <div class="d-flex justify-content-between">
-              <div class="label">Estimated Total</div>
-              <div class="value">RM <?php echo number_format($total, 2); ?></div>
-            </div>
-          </div>
-
-          <div class="line"></div>
-
-          <div class="label mb-2">Message</div>
-          <div style="background:#121212; border:1px solid #2a2a2a; padding:14px; color:#ddd;">
-            <?php echo !empty($bk->message) ? nl2br(htmlentities($bk->message)) : '<span style="color:#888;">No message.</span>'; ?>
-          </div>
-
-        </div>
-      </div>
-
+    <div class="page-header">
+        <h1>Booking Details</h1>
+        <p class="text-white opacity-75">Track your ride status</p>
     </div>
-  </div>
-</section>
 
-<?php include(__DIR__ . '/includes/footer.php'); ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <a href="my-booking.php" class="text-decoration-none text-muted mb-3 d-inline-block"><i class="fa fa-arrow-left"></i> Back to My Bookings</a>
+
+                <?php 
+                $sql = "SELECT tblbooking.*,tblvehicles.VehiclesTitle,tblvehicles.PricePerDay,tblbrands.BrandName,tblvehicles.Vimage1 
+                        FROM tblbooking 
+                        JOIN tblvehicles ON tblbooking.VehicleId=tblvehicles.id 
+                        JOIN tblbrands ON tblvehicles.VehiclesBrand=tblbrands.id 
+                        WHERE tblbooking.id=:bkid AND tblbooking.userEmail=:useremail";
+                $query = $dbh->prepare($sql);
+                $query->bindParam(':bkid', $bkid, PDO::PARAM_STR);
+                $query->bindParam(':useremail', $useremail, PDO::PARAM_STR);
+                $query->execute();
+                $results=$query->fetchAll(PDO::FETCH_OBJ);
+
+                if($query->rowCount() > 0) {
+                    foreach($results as $result) { 
+                        // Calculate total days
+                        $d1 = new DateTime($result->FromDate);
+                        $d2 = new DateTime($result->ToDate);
+                        $interval = $d1->diff($d2);
+                        $days = $interval->days;
+                        if($days == 0) $days = 1;
+                        $total = $days * $result->PricePerDay;
+                ?>
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <img src="admin/img/vehicleimages/<?php echo htmlentities($result->Vimage1);?>" class="img-fluid border border-secondary" alt="Car">
+                        <h3 class="mt-3 text-white"><?php echo htmlentities($result->BrandName);?> <?php echo htmlentities($result->VehiclesTitle);?></h3>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="booking-card mt-0">
+                            <h4 class="section-title">Booking Info</h4>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Booking No.</span>
+                                <span class="info-value">#<?php echo htmlentities($result->id);?></span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    <?php 
+                                    if($result->Status==0){ 
+                                        echo '<span class="status-badge status-pending">Pending Approval</span>';
+                                    } else if($result->Status==1) {
+                                        echo '<span class="status-badge status-confirmed">Confirmed</span>';
+                                    } else {
+                                        echo '<span class="status-badge status-cancelled">Cancelled</span>';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Payment Status</span>
+                                <span class="info-value">
+                                    <?php 
+                                    if($result->payment_status==0){ 
+                                        echo '<span class="pay-unpaid">UNPAID</span>';
+                                    } else if($result->payment_status==1) {
+                                        echo '<span class="pay-paid">PAID <i class="fa fa-check-circle"></i></span>';
+                                    } else if($result->payment_status==2) {
+                                        echo '<span class="pay-refunded">REFUNDED</span> <span class="text-danger small">(Processing)</span>';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+
+                            <div class="info-row mt-4">
+                                <span class="info-label">From Date</span>
+                                <span class="info-value"><?php echo htmlentities($result->FromDate);?></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">To Date</span>
+                                <span class="info-value"><?php echo htmlentities($result->ToDate);?></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Duration</span>
+                                <span class="info-value"><?php echo htmlentities($days);?> Days</span>
+                            </div>
+
+                            <div class="info-row" style="border-bottom: none; margin-top: 20px;">
+                                <span class="info-label">Estimated Total</span>
+                                <span class="info-value gold">RM <?php echo number_format($total, 2);?></span>
+                            </div>
+
+                            <?php if($result->Status != 2 && $result->payment_status == 0) { ?>
+                                <a href="payment.php?bkid=<?php echo htmlentities($result->id);?>" class="btn btn-pay">Proceed to Payment</a>
+                            <?php } ?>
+
+                            <?php if($result->Status == 2 && $result->payment_status == 2) { ?>
+                                <div class="alert alert-warning mt-3 mb-0" role="alert" style="font-size: 0.85rem;">
+                                    <i class="fa fa-info-circle"></i> <strong>Notice:</strong> Your booking was cancelled after payment. The system has marked this for <strong>Refund</strong>. Please contact support if you do not receive it within 3 business days.
+                                </div>
+                            <?php } ?>
+
+                        </div>
+                    </div>
+                </div>
+
+                <?php }} ?>
+            </div>
+        </div>
+    </div>
+
+    <?php include('includes/footer.php');?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

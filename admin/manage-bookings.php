@@ -3,38 +3,60 @@ session_start();
 error_reporting(0);
 include('../includes/config.php');
 
+// Security Check
 if(strlen($_SESSION['alogin'])==0)
 {   
     header('location:index.php');
 }
 else{
-    // ---(Cancel)---
+    // ==========================================
+    // 1. Handle: Cancel Booking
+    // ==========================================
     if(isset($_REQUEST['eid']))
     {
-        $eid=intval($_GET['eid']);
-        $status="2";
-        $sql = "UPDATE tblbooking SET Status=:status WHERE  id=:eid";
+        $eid = intval($_GET['eid']);
+        $status = 2; // 2 = Cancelled
+
+        // Check for Refund Logic
+        $sqlCheck = "SELECT payment_status FROM tblbooking WHERE id=:eid";
+        $queryCheck = $dbh->prepare($sqlCheck);
+        $queryCheck->bindParam(':eid', $eid, PDO::PARAM_STR);
+        $queryCheck->execute();
+        $resultCheck = $queryCheck->fetch(PDO::FETCH_OBJ);
+
+        $new_payment_status = $resultCheck->payment_status; 
+
+        if($resultCheck->payment_status == 1) {
+            $new_payment_status = 2; // Set to Refunded
+            $msg = "Booking Cancelled and marked as REFUNDED!";
+        } else {
+            $msg = "Booking Successfully Cancelled";
+        }
+
+        $sql = "UPDATE tblbooking SET Status=:status, payment_status=:pstatus WHERE id=:eid";
         $query = $dbh->prepare($sql);
-        $query -> bindParam(':status',$status, PDO::PARAM_STR);
-        $query-> bindParam(':eid',$eid, PDO::PARAM_STR);
-        $query -> execute();
-        $msg="Booking Successfully Cancelled";
+        $query->bindParam(':status', $status, PDO::PARAM_STR);
+        $query->bindParam(':pstatus', $new_payment_status, PDO::PARAM_STR);
+        $query->bindParam(':eid', $eid, PDO::PARAM_STR);
+        $query->execute();
     }
 
-    // ---(Confirm)---
+    // ==========================================
+    // 2. Handle: Confirm Booking
+    // ==========================================
     if(isset($_REQUEST['aeid']))
     {
-        $aeid=intval($_GET['aeid']);
-        $status=1;
-        $sql = "UPDATE tblbooking SET Status=:status WHERE  id=:aeid";
+        $aeid = intval($_GET['aeid']);
+        $status = 1; // 1 = Confirmed
+
+        $sql = "UPDATE tblbooking SET Status=:status WHERE id=:aeid";
         $query = $dbh->prepare($sql);
-        $query -> bindParam(':status',$status, PDO::PARAM_STR);
-        $query-> bindParam(':aeid',$aeid, PDO::PARAM_STR);
-        $query -> execute();
-        $msg="Booking Successfully Confirmed";
+        $query->bindParam(':status', $status, PDO::PARAM_STR);
+        $query->bindParam(':aeid', $aeid, PDO::PARAM_STR);
+        $query->execute();
+        $msg = "Booking Successfully Confirmed";
     }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,26 +70,28 @@ else{
         body { background-color: #f5f7fa; font-family: 'Segoe UI', sans-serif; padding-top: 80px; }
         .page-header { border-left: 5px solid #2c3e50; padding-left: 15px; margin-bottom: 30px; }
         .page-header h2 { font-weight: 800; color: #2c3e50; margin: 0; }
-        
         .card-custom { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); overflow: hidden; }
         .card-header-custom { background-color: #2c3e50; color: white; padding: 15px 20px; font-weight: 600; }
-        
         .table-custom th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #7f8c8d; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
-        .table-custom td { vertical-align: middle; color: #2c3e50; font-size: 0.95rem; }
+        .table-custom td { vertical-align: middle; color: #2c3e50; font-size: 0.9rem; }
         
-        .badge-pending { background-color: #ffeeba; color: #856404; padding: 8px 12px; border-radius: 6px; font-weight: 600; }
-        .badge-confirmed { background-color: #d4edda; color: #155724; padding: 8px 12px; border-radius: 6px; font-weight: 600; }
-        .badge-cancelled { background-color: #f8d7da; color: #721c24; padding: 8px 12px; border-radius: 6px; font-weight: 600; }
+        .badge-status { padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        
+        /* Payment Status Colors */
+        .bg-unpaid { background-color: #ffeeba; color: #856404; }
+        .bg-paid { background-color: #d1e7dd; color: #0f5132; }
+        .bg-refunded { background-color: #e2e3e5; color: #383d41; text-decoration: line-through; } 
 
-        .btn-action { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.3s; margin: 0 2px; border: none; }
-        .btn-confirm { background-color: #e3f9e5; color: #27ae60; }
-        .btn-confirm:hover { background-color: #27ae60; color: white; transform: scale(1.1); }
+        /* Booking Status Colors */
+        .bg-pending { background-color: #fff3cd; color: #856404; }
+        .bg-confirmed { background-color: #d1e7dd; color: #0f5132; }
+        .bg-cancelled { background-color: #f8d7da; color: #842029; }
+
+        .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; transition: 0.3s; border: none; margin-right: 5px; text-decoration: none; cursor: pointer; }
+        .btn-confirm { background-color: #e7f1ff; color: #0d6efd; }
+        .btn-confirm:hover { background-color: #0d6efd; color: white; transform: translateY(-2px); }
         .btn-cancel { background-color: #ffeaea; color: #e74c3c; }
-        .btn-cancel:hover { background-color: #e74c3c; color: white; transform: scale(1.1); }
-        
-        /* Vehicle details in table */
-        .vehicle-link { text-decoration: none; color: #2980b9; font-weight: 600; }
-        .vehicle-link:hover { text-decoration: underline; }
+        .btn-cancel:hover { background-color: #e74c3c; color: white; transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -75,89 +99,111 @@ else{
     <?php include('includes/header.php');?>
 
     <div class="container-fluid px-4">
-        
         <div class="page-header">
             <h2>Manage Bookings</h2>
         </div>
 
         <?php if($msg){ ?>
-            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                <i class="fa fa-check-circle me-2"></i> <?php echo htmlentities($msg); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '<?php echo htmlentities($msg); ?>',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                });
+            </script>
         <?php } ?>
 
         <div class="card card-custom">
             <div class="card-header-custom">
-                <i class="fa fa-list-alt me-2"></i> Bookings List
+                <i class="fa fa-calendar-check me-2"></i> Booking Info
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-custom mb-0">
                         <thead>
                             <tr>
-                                <th width="5%">#</th>
-                                <th width="20%">User Details</th>
-                                <th width="25%">Vehicle</th>
-                                <th width="15%">Dates</th>
-                                <th width="20%">Message</th>
-                                <th width="10%">Status</th>
-                                <th width="10%" class="text-center">Action</th>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Vehicle</th>
+                                <th>From / To</th>
+                                <th>Total Days</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            $sql = "SELECT tblusers.FullName,tblusers.EmailId,tblusers.ContactNo,tblvehicles.VehiclesTitle,tblbrands.BrandName,tblbooking.FromDate,tblbooking.ToDate,tblbooking.message,tblbooking.VehicleId as vid,tblbooking.Status,tblbooking.PostingDate,tblbooking.id  from tblbooking join tblvehicles on tblvehicles.id=tblbooking.VehicleId join tblusers on tblusers.EmailId=tblbooking.userEmail join tblbrands on tblvehicles.VehiclesBrand=tblbrands.id order by tblbooking.id desc";
+                            $sql = "SELECT tblusers.FullName,tblbrands.BrandName,tblvehicles.VehiclesTitle,tblbooking.FromDate,tblbooking.ToDate,tblbooking.message,tblbooking.VehicleId as vid,tblbooking.Status,tblbooking.PostingDate,tblbooking.id,tblbooking.payment_status, DATEDIFF(tblbooking.ToDate,tblbooking.FromDate) as totaldays  
+                                    FROM tblbooking 
+                                    JOIN tblvehicles ON tblvehicles.id=tblbooking.VehicleId 
+                                    JOIN tblusers ON tblusers.EmailId=tblbooking.userEmail 
+                                    JOIN tblbrands ON tblvehicles.VehiclesBrand=tblbrands.id  
+                                    ORDER BY tblbooking.id DESC";
                             $query = $dbh -> prepare($sql);
                             $query->execute();
                             $results=$query->fetchAll(PDO::FETCH_OBJ);
                             $cnt=1;
                             
                             if($query->rowCount() > 0) {
-                                foreach($results as $result) { ?>
+                                foreach($results as $result) { 
+                                    $days = ($result->totaldays == 0) ? 1 : $result->totaldays;
+                            ?>
                                 <tr>
                                     <td><?php echo htmlentities($cnt);?></td>
+                                    <td><?php echo htmlentities($result->FullName);?></td>
+                                    <td><a href="../vehical-details.php?vhid=<?php echo htmlentities($result->vid);?>" target="_blank" class="text-decoration-none fw-bold text-dark"><?php echo htmlentities($result->BrandName);?> , <?php echo htmlentities($result->VehiclesTitle);?></a></td>
                                     <td>
-                                        <strong><?php echo htmlentities($result->FullName);?></strong><br>
-                                        <small class="text-muted"><i class="fa fa-envelope"></i> <?php echo htmlentities($result->EmailId);?></small><br>
-                                        <small class="text-muted"><i class="fa fa-phone"></i> <?php echo htmlentities($result->ContactNo);?></small>
+                                        <div class="small text-muted"><?php echo htmlentities($result->FromDate);?></div>
+                                        <div class="small text-muted"><?php echo htmlentities($result->ToDate);?></div>
                                     </td>
+                                    <td><?php echo htmlentities($days);?> Days</td>
+                                    
                                     <td>
-                                        <a href="../vehical-details.php?vhid=<?php echo htmlentities($result->vid);?>" target="_blank" class="vehicle-link">
-                                            <?php echo htmlentities($result->BrandName);?> , <?php echo htmlentities($result->VehiclesTitle);?>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <small>From: <?php echo htmlentities($result->FromDate);?></small><br>
-                                        <small>To: <?php echo htmlentities($result->ToDate);?></small>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted"><?php echo htmlentities($result->message);?></small>
-                                    </td>
-                                    <td>
-                                        <?php if($result->Status==0){ ?>
-                                            <span class="badge-pending">Not Confirmed</span>
-                                        <?php } else if($result->Status==1) { ?>
-                                            <span class="badge-confirmed">Confirmed</span>
-                                        <?php } else { ?>
-                                            <span class="badge-cancelled">Cancelled</span>
+                                        <?php if($result->payment_status == 0) { ?>
+                                            <span class="badge badge-status bg-unpaid">Unpaid</span>
+                                        <?php } else if($result->payment_status == 1) { ?>
+                                            <span class="badge badge-status bg-paid">Paid</span>
+                                        <?php } else if($result->payment_status == 2) { ?>
+                                            <span class="badge badge-status bg-refunded">Refunded</span>
                                         <?php } ?>
                                     </td>
+
+                                    <td>
+                                        <?php 
+                                        if($result->Status==0){ ?>
+                                            <span class="badge badge-status bg-pending">Pending</span>
+                                        <?php } else if($result->Status==1) { ?>
+                                            <span class="badge badge-status bg-confirmed">Confirmed</span>
+                                        <?php } else { ?>
+                                            <span class="badge badge-status bg-cancelled">Cancelled</span>
+                                        <?php } ?>
+                                    </td>
+                                    
+                                    <td class="small text-muted"><?php echo htmlentities($result->PostingDate);?></td>
+                                    
                                     <td class="text-center">
-                                        <?php if($result->Status==0){ ?>
-                                            <a href="manage-bookings.php?aeid=<?php echo htmlentities($result->id);?>" 
-                                               onclick="return confirmAction(event, this.href, 'confirm')" 
-                                               class="btn-action btn-confirm" title="Confirm Booking">
-                                               <i class="fa fa-check"></i>
+                                        <?php if($result->Status != 2) { ?>
+                                            
+                                            <a href="javascript:void(0);" 
+                                               onclick="confirmAction('confirm', 'manage-bookings.php?aeid=<?php echo htmlentities($result->id);?>')" 
+                                               class="btn-action btn-confirm" title="Confirm">
+                                                <i class="fa fa-check"></i>
                                             </a>
 
-                                            <a href="manage-bookings.php?eid=<?php echo htmlentities($result->id);?>" 
-                                               onclick="return confirmAction(event, this.href, 'cancel')" 
-                                               class="btn-action btn-cancel" title="Cancel Booking">
-                                               <i class="fa fa-times"></i>
+                                            <a href="javascript:void(0);" 
+                                               onclick="confirmAction('cancel', 'manage-bookings.php?eid=<?php echo htmlentities($result->id);?>')" 
+                                               class="btn-action btn-cancel" title="Cancel">
+                                                <i class="fa fa-times"></i>
                                             </a>
+
                                         <?php } else { ?>
-                                            <span class="text-muted small">Completed</span>
+                                            <span class="text-muted small">Closed</span>
                                         <?php } ?>
                                     </td>
                                 </tr>
@@ -173,28 +219,34 @@ else{
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // SweetAlert2 Confirmation Logic
-        function confirmAction(e, url, actionType) {
-            e.preventDefault(); // Stop the link from redirecting immediately
+        function confirmAction(type, url) {
+            let title = '';
+            let text = '';
+            let btnColor = '';
+            let btnText = '';
 
-            // Define text/colors based on action
-            let titleText = actionType === 'confirm' ? 'Confirm Booking?' : 'Cancel Booking?';
-            let contentText = actionType === 'confirm' ? 'Are you sure you want to approve this booking?' : 'This action cannot be undone.';
-            let iconType = actionType === 'confirm' ? 'question' : 'warning';
-            let confirmBtnColor = actionType === 'confirm' ? '#27ae60' : '#d33';
-            let btnText = actionType === 'confirm' ? 'Yes, Confirm!' : 'Yes, Cancel it!';
+            if (type === 'cancel') {
+                title = 'Cancel Booking?';
+                text = 'If the user has paid, it will be marked as REFUNDED.';
+                btnColor = '#d33';
+                btnText = 'Yes, Cancel it!';
+            } else {
+                title = 'Confirm Booking?';
+                text = 'Are you sure you want to approve this booking?';
+                btnColor = '#3085d6';
+                btnText = 'Yes, Confirm it!';
+            }
 
             Swal.fire({
-                title: titleText,
-                text: contentText,
-                icon: iconType,
+                title: title,
+                text: text,
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: confirmBtnColor,
+                confirmButtonColor: btnColor,
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: btnText
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Redirect if confirmed
                     window.location.href = url;
                 }
             });

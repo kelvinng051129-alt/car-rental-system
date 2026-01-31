@@ -23,7 +23,7 @@ function navActiveMulti($pages, $currentPage) {
       <i class="fa fa-car"></i> Buat Kerja Betul2 Car Rental Admin
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button class="navbar-toggler" type="button" data-bs-toggle=\"collapse\" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -60,7 +60,10 @@ function navActiveMulti($pages, $currentPage) {
           <a class="nav-link <?php echo navActive('manage-bookings.php', $currentPage); ?>" href="manage-bookings.php">Bookings</a>
         </li>
 
-        <!-- Payments: keep gold + also active when on manage-payments.php -->
+        <li class="nav-item">
+          <a class="nav-link <?php echo navActive('manage-reviews.php', $currentPage); ?>" href="manage-reviews.php">Reviews</a>
+        </li>
+
         <li class="nav-item">
           <a class="nav-link <?php echo navActive('manage-payments.php', $currentPage); ?> <?php echo ($currentPage==='manage-payments.php') ? 'text-warning fw-bold' : ''; ?>" href="manage-payments.php">
             <i class="fa fa-dollar-sign"></i> Payments
