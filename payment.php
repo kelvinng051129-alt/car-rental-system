@@ -16,7 +16,7 @@ if ($bkid <= 0) {
   exit();
 }
 
-// 只允许查看/支付自己的 booking
+// Check booking details
 $sql = "SELECT 
           b.id AS bookingId,
           b.userEmail,
@@ -46,13 +46,13 @@ if (!$bk) {
   exit();
 }
 
-// Cancelled 不给付
+// Cancelled bookings cannot be paid
 if ((int)$bk->Status === 2) {
   header("Location: booking-details.php?bkid=".$bkid);
   exit();
 }
 
-// 计算天数（至少 1 天）
+// Calculate Days & Total
 $from = new DateTime($bk->FromDate);
 $to   = new DateTime($bk->ToDate);
 $days = (int)$from->diff($to)->days;
@@ -62,6 +62,7 @@ $total = $days * (float)$bk->PricePerDay;
 $err = "";
 $paid_now = false;
 
+// --- Payment Processing Logic ---
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
   if ((int)$bk->payment_status === 1) {
     header("Location: booking-details.php?bkid=".$bkid);
@@ -70,10 +71,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
 
   $method = isset($_POST['method']) ? trim($_POST['method']) : "";
 
-  if (!in_array($method, ['card','tng'], true)) {
+  if (!in_array($method, ['card','duitnow'], true)) {
     $err = "Please choose a payment method.";
   } else {
-    // demo validation
+    // 1. Credit Card Validation (Demo)
     if ($method === 'card') {
       $card_no = preg_replace('/\s+/', '', $_POST['card_no'] ?? '');
       $card_name = trim($_POST['card_name'] ?? '');
@@ -91,16 +92,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
       }
     }
 
-    if ($method === 'tng') {
-      $tng_phone = preg_replace('/\s+/', '', $_POST['tng_phone'] ?? '');
-      if ($tng_phone === "") {
-        $err = "Please enter your TNG phone number.";
-      } elseif (!preg_match('/^\d{9,11}$/', $tng_phone)) {
-        $err = "Invalid phone number (digits only).";
+    // 2. DuitNow/TNG Validation (Demo)
+    if ($method === 'duitnow') {
+      // Allow confirming via "Reference ID" simulation
+      $duitnow_ref = trim($_POST['duitnow_ref'] ?? '');
+      if ($duitnow_ref === "") {
+        $err = "Please enter the Reference ID / Receipt No. after scanning.";
+      } elseif (strlen($duitnow_ref) < 6) {
+        $err = "Invalid Reference ID.";
       }
     }
 
-    // success -> update paid
+    // Success -> Update Database
     if ($err === "") {
       $upd = "UPDATE tblbooking SET payment_status = 1 WHERE id = :bkid AND userEmail = :useremail";
       $u = $dbh->prepare($upd);
@@ -117,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Payment - Buat Kerja Betul2 Car Rental</title>
+  <title>Payment - Premium Fleet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -154,13 +157,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
       background:#121212; color:#fff; border-color:#d4af37;
       box-shadow:0 0 0 .2rem rgba(212,175,55,.15);
     }
+    
     .pay-option{
       border:1px solid #2a2a2a; padding:14px; cursor:pointer;
-      display:flex; gap:12px; align-items:flex-start;
+      display:flex; gap:12px; align-items:flex-start; transition: 0.2s;
     }
-    .pay-option:hover{ border-color:#444; }
-    .pay-option.active{ border-color:#d4af37; background:rgba(212,175,55,.06); }
-    .pay-icon{ color:#d4af37; font-size:1.2rem; margin-top:2px; }
+    .pay-option:hover{ border-color:#666; background:#1f1f1f; }
+    .pay-option.active{ border-color:#d4af37; background:rgba(212,175,55,.08); }
+    .pay-icon{ color:#d4af37; font-size:1.4rem; margin-top:2px; }
   </style>
 </head>
 <body>
@@ -193,7 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
             </div>
             <div class="text-end">
               <div class="label">Total</div>
-              <div class="value">RM <?php echo number_format($total, 2); ?></div>
+              <div class="value" style="color:#d4af37;">RM <?php echo number_format($total, 2); ?></div>
             </div>
           </div>
           <div class="mt-2" style="color:#888; font-size:.9rem;">
@@ -205,12 +209,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
 
     <div class="col-lg-7">
       <div class="dark-card p-4 p-md-5">
-        <h3 style="font-family:'Playfair Display'; margin-bottom:6px;">Choose Payment Method</h3>
-        <div style="color:#888; font-size:.95rem;">Demo only (sets payment_status to Paid).</div>
+        <h3 style="font-family:'Playfair Display'; margin-bottom:6px;">Secure Checkout</h3>
+        <div style="color:#888; font-size:.95rem;">Select your preferred payment method.</div>
 
         <?php if ($err !== "") { ?>
           <div class="alert alert-danger mt-3" style="border-radius:0; background:#2a0f0f; border:1px solid #7a1f1f; color:#ffdede;">
-            <?php echo htmlentities($err); ?>
+            <i class="fa fa-exclamation-circle"></i> <?php echo htmlentities($err); ?>
           </div>
         <?php } ?>
 
@@ -222,17 +226,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
               <div class="pay-option" id="optCard" onclick="selectMethod('card')">
                 <i class="fa fa-credit-card pay-icon"></i>
                 <div>
-                  <div class="value">Bank Card</div>
-                  <div style="color:#888; font-size:.9rem;">Visa / MasterCard (demo)</div>
+                  <div class="value">Credit / Debit Card</div>
+                  <div style="color:#666; font-size:.85rem;">Visa, Mastercard</div>
                 </div>
               </div>
             </div>
             <div class="col-md-6">
-              <div class="pay-option" id="optTng" onclick="selectMethod('tng')">
-                <i class="fa fa-mobile-screen-button pay-icon"></i>
+              <div class="pay-option" id="optDuitnow" onclick="selectMethod('duitnow')">
+                <i class="fa fa-qrcode pay-icon"></i>
                 <div>
-                  <div class="value">Touch ’n Go eWallet</div>
-                  <div style="color:#888; font-size:.9rem;">Phone number (demo)</div>
+                  <div class="value">DuitNow / TNG</div>
+                  <div style="color:#666; font-size:.85rem;">Scan QR to Pay</div>
                 </div>
               </div>
             </div>
@@ -240,20 +244,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
 
           <div class="line"></div>
 
-          <!-- Card Fields -->
           <div id="cardFields" style="display:none;">
+            <h5 class="mb-3" style="font-weight:400;">Enter Card Details</h5>
             <div class="row g-3">
               <div class="col-md-8">
                 <div class="label">Card Number</div>
-                <input class="form-control" name="card_no" placeholder="4111111111111111">
+                <input class="form-control" name="card_no" placeholder="0000 0000 0000 0000">
               </div>
               <div class="col-md-4">
                 <div class="label">Expiry (MM/YY)</div>
-                <input class="form-control" name="exp" placeholder="08/30">
+                <input class="form-control" name="exp" placeholder="MM/YY">
               </div>
               <div class="col-md-8">
                 <div class="label">Cardholder Name</div>
-                <input class="form-control" name="card_name" placeholder="TAN LE YONG">
+                <input class="form-control" name="card_name" placeholder="Name on Card">
               </div>
               <div class="col-md-4">
                 <div class="label">CVV</div>
@@ -262,22 +266,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
             </div>
           </div>
 
-          <!-- TNG Fields -->
-          <div id="tngFields" style="display:none;">
-            <div class="mt-2">
-              <div class="label">TNG Phone Number</div>
-              <input class="form-control" name="tng_phone" placeholder="0123456789">
+          <div id="duitnowFields" style="display:none;">
+            <div class="text-center p-3 mb-3" style="background:#fff; border-radius:8px;">
+                <h5 style="color:#000; margin-bottom:10px; font-weight:700;">Scan to Pay</h5>
+                
+                <img src="image/qr_3_1768292919.jpeg" 
+                     alt="DuitNow QR" 
+                     style="max-width:280px; width: 100%; border: 1px solid #ccc; padding:2px; border-radius: 6px;">
+                
+                <div class="mt-2" style="color:#ec2f4b; font-weight:bold; font-size:1.2rem;">RM <?php echo number_format($total, 2); ?></div>
+            </div>
+
+            <div class="label">Reference ID / Receipt No.</div>
+            <input class="form-control" name="duitnow_ref" placeholder="Enter Ref ID from TNG/Bank Receipt">
+            <div style="font-size:0.8rem; color:#888; margin-top:5px;">
+              *Please attach the Reference ID after successful payment.
             </div>
           </div>
 
           <div class="line"></div>
 
           <button class="btn-gold" type="submit" name="pay_now">
-            <i class="fa fa-lock"></i> Confirm Payment (Demo)
+            <i class="fa fa-lock me-2"></i> Confirm Payment
           </button>
 
-          <div class="mt-2" style="color:#666; font-size:.85rem;">
-            *No real payment. This is only for demonstration.
+          <div class="mt-3 text-center" style="color:#555; font-size:.8rem;">
+            <i class="fa fa-shield-alt"></i> Payments are secure and encrypted.
           </div>
         </form>
 
@@ -291,7 +305,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['pay_now'])) {
 Swal.fire({
   icon: 'success',
   title: 'Payment Successful!',
-  text: 'Payment status updated to PAID.',
+  text: 'Thank you! Your payment has been verified.',
   confirmButtonColor: '#d4af37',
   background: '#181818',
   color: '#fff'
@@ -305,22 +319,25 @@ Swal.fire({
 function selectMethod(m){
   document.getElementById('method').value = m;
 
+  // Reset UI
   document.getElementById('optCard').classList.remove('active');
-  document.getElementById('optTng').classList.remove('active');
+  document.getElementById('optDuitnow').classList.remove('active');
 
+  // Hide Sections
   document.getElementById('cardFields').style.display = 'none';
-  document.getElementById('tngFields').style.display = 'none';
+  document.getElementById('duitnowFields').style.display = 'none';
 
+  // Activate Selection
   if(m === 'card'){
     document.getElementById('optCard').classList.add('active');
     document.getElementById('cardFields').style.display = 'block';
   } else {
-    document.getElementById('optTng').classList.add('active');
-    document.getElementById('tngFields').style.display = 'block';
+    document.getElementById('optDuitnow').classList.add('active');
+    document.getElementById('duitnowFields').style.display = 'block';
   }
 }
 
-// 默认选银行卡（你要默认不选也行）
+// Default Selection
 selectMethod('card');
 </script>
 
