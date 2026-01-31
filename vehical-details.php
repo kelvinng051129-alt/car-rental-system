@@ -481,11 +481,11 @@ if(isset($_POST['submit']))
                     <form method="post">
                         <div class="mb-3">
                             <label>From Date</label>
-                            <input type="date" class="form-control form-control-dark" name="fromdate" required>
+                            <input type="date" class="form-control form-control-dark" name="fromdate" min="<?php echo date('Y-m-d'); ?>"  required>
                         </div>
                         <div class="mb-3">
                             <label>To Date</label>
-                            <input type="date" class="form-control form-control-dark" name="todate" required>
+                            <input type="date" class="form-control form-control-dark" name="todate" min="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label>Message (Optional)</label>
