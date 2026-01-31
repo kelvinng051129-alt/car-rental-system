@@ -1,18 +1,57 @@
 <?php 
 session_start();
-include('includes/config.php');
+// 🔥 修复：强制使用绝对路径加载数据库配置，防止报错
+require_once(__DIR__ . '/includes/config.php');
 error_reporting(0);
 
 $booking_status = ""; 
+$review_status = ""; // 用于评价功能的弹窗状态
 
+// 1. 获取车辆 ID
+$vhid = intval($_GET['vhid']);
+
+// ===========================
+//  LOGIC 1: 提交评价 (SUBMIT REVIEW)
+// ===========================
+if (isset($_POST['submit_review'])) {
+    if (empty($_SESSION['login'])) {
+        $review_status = "not_logged_in";
+    } else {
+        $rating  = (int)($_POST['rating'] ?? 0);
+        $comment = trim($_POST['comment'] ?? "");
+
+        // 简单验证
+        if ($rating < 1 || $rating > 5 || $comment === "") {
+            $review_status = "invalid";
+        } else {
+            // 插入评价到数据库 (对接你的 tblreviews 表结构)
+            $sql = "INSERT INTO tblreviews (VehicleId, userEmail, rating, comment, status)
+                    VALUES (:vhid, :email, :rating, :comment, 1)";
+            $stmt = $dbh->prepare($sql);
+            $stmt->bindParam(':vhid', $vhid, PDO::PARAM_INT);
+            $stmt->bindParam(':email', $_SESSION['login'], PDO::PARAM_STR);
+            $stmt->bindParam(':rating', $rating, PDO::PARAM_INT);
+            $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
+
+            if ($stmt->execute()) {
+                $review_status = "success";
+            } else {
+                $review_status = "error";
+            }
+        }
+    }
+}
+
+// ===========================
+//  LOGIC 2: 提交预订 (BOOKING)
+// ===========================
 if(isset($_POST['submit']))
 {
     $fromdate=$_POST['fromdate'];
     $todate=$_POST['todate']; 
     $message=$_POST['message'];
     $useremail=$_SESSION['login'];
-    $status=0;
-    $vhid=$_GET['vhid'];
+    $status=0; // 0 = Pending
     
     // Check if user is logged in
     if(strlen($_SESSION['login'])==0)
@@ -126,7 +165,7 @@ if(isset($_POST['submit']))
             z-index: 10;
         }
 
-        /* 🔥 BACK BUTTON STYLE */
+        /* BACK BUTTON STYLE */
         .btn-back-link {
             color: #888;
             text-decoration: none;
@@ -190,14 +229,14 @@ if(isset($_POST['submit']))
         .check-icon { color: #27ae60 !important; }
         .times-icon { color: #555 !important; opacity: 0.4; }
 
-        /* Thumbnail Grid (Click to Zoom) */
+        /* Thumbnail Grid */
         .thumb-grid { display: flex; gap: 15px; margin-top: 30px; }
         .thumb-img { 
             width: 120px; 
             height: 80px; 
             object-fit: cover; 
             border: 1px solid #333; 
-            cursor: zoom-in; /* Magnifier Icon */
+            cursor: zoom-in; 
             opacity: 0.6; 
             transition: 0.3s; 
         }
@@ -277,7 +316,20 @@ if(isset($_POST['submit']))
         }
         .login-link-btn:hover { background: #d4af37; color: #000; }
 
-        /* --- 3. LIGHTBOX MODAL --- */
+        /* 🔥 REVIEW SECTION STYLE */
+        .review-item { background:#1a1a1a; border:1px solid #2a2a2a; padding:15px; margin-bottom:12px; }
+        .review-header { display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom: 8px; }
+        .review-user { font-weight:600; color:#d4af37; }
+        .review-date { color:#888; font-size:0.8rem; }
+        .review-stars { color:#f1c40f; margin-bottom: 5px; font-size: 0.9rem; }
+        .review-comment { color:#ddd; font-size: 0.95rem; line-height: 1.6; }
+        
+        .btn-hero { background: #d4af37; color: #000; font-weight: bold; border: none; transition: 0.3s; }
+        .btn-hero:hover { background: #fff; transform: translateY(-2px); }
+        .btn-outline-gold { border: 1px solid #d4af37; color: #d4af37; padding: 10px 20px; text-decoration: none; display: inline-block; transition: 0.3s; text-align: center; width: 100%;}
+        .btn-outline-gold:hover { background: #d4af37; color: #000; }
+
+        /* Lightbox Modal */
         .image-modal {
             display: none;
             position: fixed; 
@@ -321,7 +373,7 @@ if(isset($_POST['submit']))
     <?php include('includes/header.php');?>
 
     <?php 
-    $vhid=intval($_GET['vhid']);
+    // Fetch Vehicle Details
     $sql = "SELECT tblvehicles.*,tblbrands.BrandName,tblbrands.id as bid from tblvehicles join tblbrands on tblbrands.id=tblvehicles.VehiclesBrand where tblvehicles.id=:vhid";
     $query = $dbh -> prepare($sql);
     $query->bindParam(':vhid', $vhid, PDO::PARAM_STR);
@@ -447,6 +499,88 @@ if(isset($_POST['submit']))
                     </ul>
                 </div>
 
+                <div class="detail-card">
+                    <h3 class="section-heading">Customer Reviews</h3>
+                    
+                    <?php
+                    // ---- FETCH ALL REVIEWS ----
+                    // Join with tblusers to get FullName if possible, otherwise just use Email
+                    $rsql = "SELECT tblreviews.*, tblusers.FullName 
+                             FROM tblreviews 
+                             LEFT JOIN tblusers ON tblreviews.userEmail = tblusers.EmailId 
+                             WHERE tblreviews.VehicleId=:vhid AND tblreviews.status=1 
+                             ORDER BY tblreviews.created_at DESC";
+                    $rq = $dbh->prepare($rsql);
+                    $rq->bindParam(':vhid', $vhid, PDO::PARAM_INT);
+                    $rq->execute();
+                    $reviews = $rq->fetchAll(PDO::FETCH_OBJ);
+                    
+                    if (!$reviews || count($reviews) === 0) { ?>
+                        <div class="text-center py-4 text-muted">
+                            <i class="fa fa-comment-slash fa-2x mb-3"></i>
+                            <p>No reviews yet. Be the first to comment!</p>
+                        </div>
+                    <?php } else { 
+                        foreach ($reviews as $rv) { ?>
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <div class="review-user">
+                                        <i class="fa fa-user-circle me-2"></i>
+                                        <?php echo htmlentities($rv->FullName ? $rv->FullName : $rv->userEmail); ?>
+                                    </div>
+                                    <div class="review-date">
+                                        <?php echo htmlentities($rv->created_at); ?>
+                                    </div>
+                                </div>
+
+                                <div class="review-stars">
+                                    <?php 
+                                    for($i=1; $i<=5; $i++) {
+                                        if($i <= $rv->rating) { echo '<i class="fa fa-star"></i>'; }
+                                        else { echo '<i class="far fa-star text-muted"></i>'; }
+                                    }
+                                    ?>
+                                </div>
+
+                                <div class="review-comment">
+                                    <?php echo nl2br(htmlentities($rv->comment)); ?>
+                                </div>
+                            </div>
+                        <?php } 
+                    } ?>
+
+                    <hr style="border-color:#2a2a2a; margin:25px 0;">
+
+                    <?php if (empty($_SESSION['login'])) { ?>
+                        <a href="login.php?redirect=vehical-details.php?vhid=<?php echo $vhid; ?>" class="btn-outline-gold">
+                            Login to write a review
+                        </a>
+                    <?php } else { ?>
+                        <form method="post">
+                            <div class="mb-3">
+                                <label style="color:#aaa;">Rating (1–5)</label>
+                                <select class="form-control form-control-dark" name="rating" required>
+                                    <option value="">Select rating</option>
+                                    <option value="5">5 - Excellent</option>
+                                    <option value="4">4 - Good</option>
+                                    <option value="3">3 - Okay</option>
+                                    <option value="2">2 - Poor</option>
+                                    <option value="1">1 - Bad</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label style="color:#aaa;">Your Experience</label>
+                                <textarea name="comment" rows="3" class="form-control form-control-dark" required placeholder="How was the car?"></textarea>
+                            </div>
+
+                            <button type="submit" name="submit_review" class="btn-hero" style="padding:12px 28px; width:100%;">
+                                Submit Review
+                            </button>
+                        </form>
+                    <?php } ?>
+                </div>
+
             </div>
 
             <div class="col-lg-4">
@@ -481,7 +615,7 @@ if(isset($_POST['submit']))
                     <form method="post">
                         <div class="mb-3">
                             <label>From Date</label>
-                            <input type="date" class="form-control form-control-dark" name="fromdate" min="<?php echo date('Y-m-d'); ?>"  required>
+                            <input type="date" class="form-control form-control-dark" name="fromdate" min="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label>To Date</label>
@@ -495,12 +629,10 @@ if(isset($_POST['submit']))
                         <?php if($_SESSION['login']) { ?>
                             <button type="submit" class="btn btn-book-now" name="submit">Confirm Booking</button>
                         <?php } else { ?>
-                                <?php
-                                $redirect = "vehical-details.php?vhid=" . urlencode($_GET['vhid'] ?? '');
-                                ?>
-                                <a href="login.php?redirect=<?php echo urlencode($redirect); ?>" class="login-link-btn">
+                            <?php $redirect = "vehical-details.php?vhid=" . urlencode($_GET['vhid'] ?? ''); ?>
+                            <a href="login.php?redirect=<?php echo urlencode($redirect); ?>" class="login-link-btn">
                                 Login to Book
-                                </a>
+                            </a>
                         <?php } ?>
                     </form>
 
@@ -525,31 +657,28 @@ if(isset($_POST['submit']))
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // 1. Function to Open Lightbox (Zoom)
         function openLightbox(src) {
             var modal = document.getElementById("imgModal");
             var modalImg = document.getElementById("fullImage");
-            
             modal.style.display = "block";
             modalImg.src = src; 
         }
 
-        // 2. Function to Close Modal
         function closeModal() {
             var modal = document.getElementById("imgModal");
             modal.style.display = "none";
         }
 
-        // 3. Handle SweetAlert Popups based on PHP status
+        // 3. Handle SweetAlert Popups for Booking
         <?php if($booking_status == "success") { ?>
             Swal.fire({
                 title: 'Booking Confirmed!',
                 text: 'We have received your booking request. Our team will contact you shortly.',
                 icon: 'success',
                 confirmButtonText: 'Great!',
-                confirmButtonColor: '#d4af37', // Gold button
-                background: '#1a1a1a', // Dark background
-                color: '#fff' // White text
+                confirmButtonColor: '#d4af37', 
+                background: '#1a1a1a', 
+                color: '#fff' 
             });
         <?php } elseif($booking_status == "error") { ?>
             Swal.fire({
@@ -573,10 +702,48 @@ if(isset($_POST['submit']))
                 color: '#fff'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Open Login Modal via Bootstrap
-                    var myModal = new bootstrap.Modal(document.getElementById('loginform'));
-                    myModal.show();
+                    window.location.href = 'login.php?redirect=vehical-details.php?vhid=<?php echo $vhid; ?>';
                 }
+            });
+        <?php } ?>
+
+        // 4. Handle SweetAlert Popups for Reviews
+        <?php if ($review_status === "success") { ?>
+            Swal.fire({
+              icon: 'success',
+              title: 'Review Submitted',
+              text: 'Thank you for your feedback!',
+              confirmButtonColor: '#d4af37',
+              background: '#1a1a1a',
+              color: '#fff'
+            }).then(() => {
+                // Prevent form resubmission
+                if ( window.history.replaceState ) {
+                    window.history.replaceState( null, null, window.location.href );
+                }
+                window.location.href = window.location.href; // Reload
+            });
+        <?php } ?>
+
+        <?php if ($review_status === "invalid") { ?>
+            Swal.fire({
+              icon: 'error',
+              title: 'Invalid Input',
+              text: 'Please give a rating and write a comment.',
+              confirmButtonColor: '#d4af37',
+              background: '#1a1a1a',
+              color: '#fff'
+            });
+        <?php } ?>
+
+        <?php if ($review_status === "error") { ?>
+            Swal.fire({
+              icon: 'error',
+              title: 'Failed',
+              text: 'Something went wrong. Try again.',
+              confirmButtonColor: '#d4af37',
+              background: '#1a1a1a',
+              color: '#fff'
             });
         <?php } ?>
     </script>
