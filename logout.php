@@ -26,26 +26,21 @@ session_destroy();
 <head>
     <meta charset="UTF-8">
     <title>Logging Out...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap + SweetAlert -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
 
     <style>
         body {
+            background-color: #0f0f0f; /* Match your site's dark background */
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
-                url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
             height: 100vh;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
             overflow: hidden;
         }
     </style>
@@ -55,15 +50,29 @@ session_destroy();
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    let timerInterval;
     Swal.fire({
+        title: 'See You Soon!',
+        html: 'Logging out securely...',
+        timer: 2000,
+        timerProgressBar: true,
         icon: 'success',
-        title: 'Logged Out',
-        text: 'You have been logged out successfully.',
-        timer: 1500,
+        background: '#1a1a1a', // Dark card background
+        color: '#fff',         // White text
         showConfirmButton: false,
-        background: '#fff',
-        heightAuto: false
-    }).then(() => {
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+            const b = Swal.getHtmlContainer().querySelector('b')
+            timerInterval = setInterval(() => {
+                if(b) b.textContent = Swal.getTimerLeft()
+            }, 100)
+        },
+        willClose: () => {
+            clearInterval(timerInterval)
+        }
+    }).then((result) => {
+        // Redirect to homepage after alert closes
         window.location.href = 'index.php';
     });
 </script>
