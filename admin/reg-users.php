@@ -9,11 +9,11 @@ if(strlen($_SESSION['alogin'])==0)
     header('location:index.php');
 }
 else{
-    // --- Delete User Logic (Keep Original) ---
+    // --- Delete User Logic ---
     if(isset($_GET['del']))
     {
         $id=$_GET['del'];
-        $sql = "delete from tblusers WHERE id=:id";
+        $sql = "DELETE FROM tblusers WHERE id=:id";
         $query = $dbh->prepare($sql);
         $query -> bindParam(':id',$id, PDO::PARAM_STR);
         $query -> execute();
@@ -62,6 +62,8 @@ else{
             transform: scale(1.1); 
             box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
         }
+
+        .badge-id { background-color: #e9ecef; color: #495057; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -92,15 +94,15 @@ else{
                             <tr>
                                 <th width="5%">#</th>
                                 <th width="15%">Name</th>
-                                <th width="25%">Email / Contact</th>
-                                <th width="25%">Address</th>
-                                <th width="15%">Reg Date</th>
+                                <th width="20%">Identity / License</th> <th width="20%">Email / Contact</th>
+                                <th width="20%">Address</th>
+                                <th width="10%">Reg Date</th>
                                 <th width="10%" class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php 
-                            $sql = "SELECT * from  tblusers";
+                            $sql = "SELECT * from tblusers ORDER BY RegDate DESC";
                             $query = $dbh -> prepare($sql);
                             $query->execute();
                             $results=$query->fetchAll(PDO::FETCH_OBJ);
@@ -116,15 +118,31 @@ else{
                                             <strong><?php echo htmlentities($result->FullName);?></strong>
                                         </div>
                                     </td>
+                                    
+                                    <td>
+                                        <?php if($result->IcNo) { ?>
+                                            <div class="small"><strong>IC:</strong> <?php echo htmlentities($result->IcNo);?></div>
+                                        <?php } else { ?>
+                                            <span class="text-muted small">- No IC -</span><br>
+                                        <?php } ?>
+
+                                        <?php if($result->LicenseNo) { ?>
+                                            <div class="small text-muted"><strong>Lic:</strong> <?php echo htmlentities($result->LicenseNo);?></div>
+                                            <div class="small text-danger" style="font-size: 0.8rem;">
+                                                Exp: <?php echo htmlentities($result->LicenseExpDate);?>
+                                            </div>
+                                        <?php } ?>
+                                    </td>
+
                                     <td>
                                         <div class="text-primary small mb-1"><i class="fa fa-envelope me-1"></i> <?php echo htmlentities($result->EmailId);?></div>
                                         <div class="text-muted small"><i class="fa fa-phone me-1"></i> <?php echo htmlentities($result->ContactNo);?></div>
                                     </td>
                                     <td>
-                                        <small class="d-block text-truncate" style="max-width: 250px;">
+                                        <small class="d-block text-truncate" style="max-width: 200px;">
                                             <?php echo htmlentities($result->Address);?>
                                         </small>
-                                        <small class="text-muted"><?php echo htmlentities($result->City);?>, <?php echo htmlentities($result->Country);?></small>
+                                        <small class="text-muted"><?php echo htmlentities($result->City);?></small>
                                     </td>
                                     <td><small class="text-muted"><?php echo htmlentities($result->RegDate);?></small></td>
                                     
@@ -148,7 +166,7 @@ else{
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // 🔥 SweetAlert2 Delete Logic
+        // SweetAlert2 Delete Logic
         function confirmDelete(e, url) {
             e.preventDefault(); // Stop the link from working immediately
 

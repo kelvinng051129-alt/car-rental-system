@@ -3,7 +3,7 @@ session_start();
 error_reporting(0);
 include('../includes/config.php');
 
-// Security Check: Redirect to login if not logged in
+// Security Check
 if(strlen($_SESSION['alogin'])==0)
 {   
     header('location:index.php');
@@ -22,20 +22,23 @@ else
         $pricepermonth = !empty($_POST['pricepermonth']) ? $_POST['pricepermonth'] : 0;
         $securitydeposit = !empty($_POST['securitydeposit']) ? $_POST['securitydeposit'] : 0;
 
-        // Capture Vehicle Type
+        // --- Vehicle Specs ---
         $vehicletype = $_POST['vehicletype'];
-
         $fueltype = $_POST['fueltype'];
         $transmission = $_POST['transmission'];
         $modelyear = $_POST['modelyear'];
         $seatingcapacity = $_POST['seatingcapacity'];
+
+        // MALAYSIA DOCS ---
+        $roadtaxexp = $_POST['roadtaxexp'];
+        $insurancepolicy = $_POST['insurancepolicy'];
         
         // Image Processing
         $vimage1 = $_FILES["img1"]["name"];
         $vimage2 = $_FILES["img2"]["name"];
         $vimage3 = $_FILES["img3"]["name"];
 
-        // Accessories Processing
+        // Accessories
         $airconditioner = isset($_POST['airconditioner']) ? 1 : 0;
         $powerdoorlocks = isset($_POST['powerdoorlocks']) ? 1 : 0;
         $antilockbrakingsys = isset($_POST['antilockbrakingsys']) ? 1 : 0;
@@ -55,7 +58,7 @@ else
         move_uploaded_file($_FILES["img3"]["tmp_name"], "img/vehicleimages/".$_FILES["img3"]["name"]);
 
         // --- SQL Query ---
-        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,Transmission,VehicleType,ModelYear,SeatingCapacity,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:transmission,:vehicletype,:modelyear,:seatingcapacity,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
+        $sql = "INSERT INTO tblvehicles(VehiclesTitle,VehiclesBrand,VehiclesOverview,PricePerDay,PricePerWeek,PricePerMonth,SecurityDeposit,FuelType,Transmission,VehicleType,ModelYear,SeatingCapacity,RoadTaxExpDate,InsurancePolicyNo,Vimage1,Vimage2,Vimage3,AirConditioner,PowerDoorLocks,AntiLockBrakingSystem,BrakeAssist,PowerSteering,DriverAirbag,PassengerAirbag,PowerWindows,CDPlayer,CentralLocking,CrashSensor,LeatherSeats) VALUES(:vehicletitle,:brand,:vehicleoverview,:priceperday,:priceperweek,:pricepermonth,:securitydeposit,:fueltype,:transmission,:vehicletype,:modelyear,:seatingcapacity,:roadtaxexp,:insurancepolicy,:vimage1,:vimage2,:vimage3,:airconditioner,:powerdoorlocks,:antilockbrakingsys,:brakeassist,:powersteering,:driverairbag,:passengerairbag,:powerwindow,:cdplayer,:centrallocking,:crashcensor,:leatherseats)";
         
         $query = $dbh->prepare($sql);
         
@@ -68,12 +71,14 @@ else
         $query->bindParam(':securitydeposit',$securitydeposit,PDO::PARAM_STR);
         $query->bindParam(':fueltype',$fueltype,PDO::PARAM_STR);
         $query->bindParam(':transmission',$transmission,PDO::PARAM_STR);
-        
-        // Bind Vehicle Type
         $query->bindParam(':vehicletype',$vehicletype,PDO::PARAM_STR);
-
         $query->bindParam(':modelyear',$modelyear,PDO::PARAM_STR);
         $query->bindParam(':seatingcapacity',$seatingcapacity,PDO::PARAM_STR);
+        
+        // Bind New Malaysia Fields
+        $query->bindParam(':roadtaxexp',$roadtaxexp,PDO::PARAM_STR);
+        $query->bindParam(':insurancepolicy',$insurancepolicy,PDO::PARAM_STR);
+
         $query->bindParam(':vimage1',$vimage1,PDO::PARAM_STR);
         $query->bindParam(':vimage2',$vimage2,PDO::PARAM_STR);
         $query->bindParam(':vimage3',$vimage3,PDO::PARAM_STR);
@@ -182,6 +187,7 @@ else
                                         <option value="SUV">SUV</option>
                                         <option value="MPV">MPV</option>
                                         <option value="Coupe">Coupe</option>
+                                        <option value="Luxury">Luxury</option>
                                     </select>
                                 </div>
 
@@ -210,7 +216,7 @@ else
 
                                 <div class="col-md-4">
                                     <label class="form-label">Seating Capacity</label>
-                                    <input type="number" min="1" max="7" name="seatingcapacity" class="form-control" placeholder="e.g. 5" required>
+                                    <input type="number" min="1" max="10" name="seatingcapacity" class="form-control" placeholder="e.g. 5" required>
                                 </div>
                                 
                                 <div class="col-12">
@@ -243,6 +249,24 @@ else
                 </div>
 
                 <div class="col-lg-4">
+                    
+                    <div class="card-custom">
+                        <div class="card-header-custom" style="background: #34495e;">
+                            <i class="fa fa-file-contract text-white"></i> Legal & Documentation
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="mb-3">
+                                <label class="form-label text-danger">Road Tax Expiry Date</label>
+                                <input type="date" name="roadtaxexp" class="form-control" required>
+                                <div class="form-text">System will alert if expired.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Insurance Policy No.</label>
+                                <input type="text" name="insurancepolicy" class="form-control" placeholder="e.g. MH-2991-88" required>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card-custom">
                         <div class="card-header-custom" style="background: #27ae60;">
                             <i class="fa fa-money-bill-wave text-white"></i> Pricing Packages
@@ -251,23 +275,19 @@ else
                             <div class="mb-3">
                                 <label class="form-label text-success">Price Per Day (RM)</label>
                                 <input type="number" name="priceperday" id="price_day" class="form-control price-input" placeholder="e.g. 100" required>
-                                <div class="form-text">Standard daily rate.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label text-primary">Price Per Week (7 Days)</label>
                                 <input type="number" name="priceperweek" id="price_week" class="form-control price-input-week" placeholder="e.g. 600">
-                                <div class="form-text">Auto-calculated (15% Discount).</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" style="color: #8e44ad;">Price Per Month (30 Days)</label>
                                 <input type="number" name="pricepermonth" id="price_month" class="form-control price-input-month" placeholder="e.g. 2000">
-                                <div class="form-text">Auto-calculated (35% Discount).</div>
                             </div>
                             <hr>
                             <div class="mb-3">
                                 <label class="form-label text-danger">Security Deposit (RM)</label>
                                 <input type="number" name="securitydeposit" class="form-control price-input-deposit" placeholder="e.g. 500" required>
-                                <div class="form-text">Refundable amount (Required).</div>
                             </div>
                         </div>
                     </div>

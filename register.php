@@ -20,11 +20,17 @@ if (isset($_POST['register'])) {
     $password = trim($_POST['password'] ?? '');
     $cpass    = trim($_POST['confirm_password'] ?? '');
     $contact  = trim($_POST['contact'] ?? '');
+    
+    // 🔥 New Malaysian Fields
+    $icno        = trim($_POST['icno'] ?? '');
+    $licenseno   = trim($_POST['licenseno'] ?? '');
+    $licenseexp  = trim($_POST['licenseexp'] ?? '');
+    
     $address  = trim($_POST['address'] ?? '');
     $city     = trim($_POST['city'] ?? '');
 
     // Basic validation
-    if ($fullname === '' || $email === '' || $password === '' || $cpass === '' || $contact === '' || $address === '' || $city === '') {
+    if ($fullname === '' || $email === '' || $password === '' || $cpass === '' || $contact === '' || $address === '' || $city === '' || $icno === '' || $licenseno === '' || $licenseexp === '') {
         $errMsg = "Please fill in all fields.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errMsg = "Please enter a valid email address.";
@@ -32,6 +38,12 @@ if (isset($_POST['register'])) {
         $errMsg = "Password and Confirm Password do not match.";
     } elseif (!preg_match('/^[0-9]{9,11}$/', $contact)) {
         $errMsg = "Please enter a valid phone number (digits only).";
+    } elseif (!preg_match('/^[0-9]{12}$/', $icno)) {
+        // 🔥 Malaysia IC Validation (12 Digits)
+        $errMsg = "Invalid MyKad (IC) Number. Please enter 12 digits without dashes (-).";
+    } elseif ($licenseexp < date('Y-m-d')) {
+        // 🔥 License Expiry Check
+        $errMsg = "Your Driving License has expired. You cannot register.";
     } else {
 
         // Check if email already exists
@@ -47,14 +59,19 @@ if (isset($_POST['register'])) {
             // Hash password (bcrypt)
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-            // Insert new user
-            $sql = "INSERT INTO tblusers(FullName, EmailId, Password, ContactNo, Address, City)
-                    VALUES(:fullname, :email, :password, :contact, :address, :city)";
+            // Insert new user with IC and License info
+            $sql = "INSERT INTO tblusers(FullName, EmailId, Password, ContactNo, IcNo, LicenseNo, LicenseExpDate, Address, City)
+                    VALUES(:fullname, :email, :password, :contact, :icno, :licenseno, :licenseexp, :address, :city)";
             $query = $dbh->prepare($sql);
             $query->bindParam(':fullname', $fullname, PDO::PARAM_STR);
             $query->bindParam(':email', $email, PDO::PARAM_STR);
             $query->bindParam(':password', $hashedPassword, PDO::PARAM_STR);
             $query->bindParam(':contact', $contact, PDO::PARAM_STR);
+            // Binding new fields
+            $query->bindParam(':icno', $icno, PDO::PARAM_STR);
+            $query->bindParam(':licenseno', $licenseno, PDO::PARAM_STR);
+            $query->bindParam(':licenseexp', $licenseexp, PDO::PARAM_STR);
+            
             $query->bindParam(':address', $address, PDO::PARAM_STR);
             $query->bindParam(':city', $city, PDO::PARAM_STR);
 
@@ -80,14 +97,11 @@ if (isset($_POST['register'])) {
   <title>Register - Buat Kerja Betul2 Car Rental</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Bootstrap + Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-  <!-- SweetAlert2 -->
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -166,6 +180,15 @@ if (isset($_POST['register'])) {
       border-color:#d4af37;
       box-shadow:0 0 0 0.2rem rgba(212,175,55,0.15);
     }
+    
+    /* Auto-fill fix for dark theme */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active{
+        -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+        -webkit-text-fill-color: white !important;
+    }
 
     .btn-gold{
       background: linear-gradient(45deg, #d4af37, #c5a028);
@@ -210,6 +233,16 @@ if (isset($_POST['register'])) {
       color:#d4af37;
       border-radius:0;
     }
+    
+    .section-title-small {
+        color: #d4af37;
+        font-size: 1rem;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        font-weight: 500;
+    }
   </style>
 </head>
 
@@ -236,11 +269,14 @@ if (isset($_POST['register'])) {
 
             <form method="post" autocomplete="off">
               <div class="row g-3">
+                
+                <div class="col-12"><div class="section-title-small">Personal Information</div></div>
+                
                 <div class="col-md-6">
                   <label class="form-label">Full Name</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="fa fa-user"></i></span>
-                    <input type="text" class="form-control" name="fullname" placeholder="Your full name" required>
+                    <input type="text" class="form-control" name="fullname" placeholder="As per MyKad" required>
                   </div>
                 </div>
 
@@ -251,6 +287,43 @@ if (isset($_POST['register'])) {
                     <input type="email" class="form-control" name="email" placeholder="you@example.com" required>
                   </div>
                 </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Contact Number</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-phone"></i></span>
+                    <input type="text" class="form-control" name="contact" placeholder="e.g. 0123456789" required>
+                  </div>
+                </div>
+
+                <div class="col-12"><div class="section-title-small">Identity & License (Malaysia)</div></div>
+
+                <div class="col-md-12">
+                  <label class="form-label">MyKad No. (IC)</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-id-card"></i></span>
+                    <input type="text" class="form-control" name="icno" placeholder="e.g. 981225015566 (12 digits, no dash)" maxlength="12" required>
+                  </div>
+                  <div style="font-size:0.75rem; color:#666; margin-top:3px;">* For verification purposes only.</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Driving License No.</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-car"></i></span>
+                    <input type="text" class="form-control" name="licenseno" placeholder="License Number" required>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">License Expiry Date</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                    <input type="date" class="form-control" name="licenseexp" min="<?php echo date('Y-m-d'); ?>" required>
+                  </div>
+                </div>
+
+                <div class="col-12"><div class="section-title-small">Security & Address</div></div>
 
                 <div class="col-md-6">
                   <label class="form-label">Password</label>
@@ -269,14 +342,6 @@ if (isset($_POST['register'])) {
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Contact Number</label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fa fa-phone"></i></span>
-                    <input type="text" class="form-control" name="contact" placeholder="e.g. 01123366716" required>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
                   <label class="form-label">City</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="fa fa-city"></i></span>
@@ -284,7 +349,7 @@ if (isset($_POST['register'])) {
                   </div>
                 </div>
 
-                <div class="col-12">
+                <div class="col-md-6">
                   <label class="form-label">Address</label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="fa fa-location-dot"></i></span>
@@ -292,7 +357,7 @@ if (isset($_POST['register'])) {
                   </div>
                 </div>
 
-                <div class="col-12 mt-2">
+                <div class="col-12 mt-4">
                   <button type="submit" name="register" class="btn-gold">Create Account</button>
                 </div>
               </div>
@@ -312,14 +377,13 @@ if (isset($_POST['register'])) {
 
 <?php include('includes/footer.php'); ?>
 
-<!-- SweetAlert success AFTER page loaded -->
 <?php if($registerSuccess) { ?>
 <script>
   Swal.fire({
       icon: 'success',
       title: 'Account Created',
-      text: 'Hi <?php echo addslashes($successName); ?>, please login to continue.',
-      timer: 1600,
+      text: 'Hi <?php echo addslashes($successName); ?>, registration successful. Please login.',
+      timer: 2000,
       showConfirmButton: false,
       heightAuto: false
   }).then(() => {

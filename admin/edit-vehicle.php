@@ -10,7 +10,6 @@ if(strlen($_SESSION['alogin'])==0)
 }
 else
 { 
-    // ID from URL
     $id=intval($_GET['id']);
 
     if(isset($_POST['submit']))
@@ -19,21 +18,20 @@ else
         $brand = $_POST['brandname'];
         $vehicleoverview = $_POST['vehicalorcview'];
         $priceperday = $_POST['priceperday'];
-        
-        // --- Pricing Logic ---
         $priceperweek = !empty($_POST['priceperweek']) ? $_POST['priceperweek'] : 0;
         $pricepermonth = !empty($_POST['pricepermonth']) ? $_POST['pricepermonth'] : 0;
         $securitydeposit = !empty($_POST['securitydeposit']) ? $_POST['securitydeposit'] : 0;
-
-        // 🔥 NEW: Capture Vehicle Type
+        
         $vehicletype = $_POST['vehicletype'];
-
         $fueltype = $_POST['fueltype'];
         $transmission = $_POST['transmission'];
         $modelyear = $_POST['modelyear'];
         $seatingcapacity = $_POST['seatingcapacity'];
+
+        // MALAYSIA DOCS ---
+        $roadtaxexp = $_POST['roadtaxexp'];
+        $insurancepolicy = $_POST['insurancepolicy'];
         
-        // Accessories
         $airconditioner = isset($_POST['airconditioner']) ? 1 : 0;
         $powerdoorlocks = isset($_POST['powerdoorlocks']) ? 1 : 0;
         $antilockbrakingsys = isset($_POST['antilockbrakingsys']) ? 1 : 0;
@@ -47,8 +45,8 @@ else
         $crashcensor = isset($_POST['crashcensor']) ? 1 : 0;
         $leatherseats = isset($_POST['leatherseats']) ? 1 : 0;
 
-        // --- SQL Update Query (Added VehicleType) ---
-        $sql="UPDATE tblvehicles SET VehiclesTitle=:vehicletitle,VehiclesBrand=:brand,VehiclesOverview=:vehicleoverview,PricePerDay=:priceperday,PricePerWeek=:priceperweek,PricePerMonth=:pricepermonth,SecurityDeposit=:securitydeposit,FuelType=:fueltype,Transmission=:transmission,VehicleType=:vehicletype,ModelYear=:modelyear,SeatingCapacity=:seatingcapacity,AirConditioner=:airconditioner,PowerDoorLocks=:powerdoorlocks,AntiLockBrakingSystem=:antilockbrakingsys,BrakeAssist=:brakeassist,PowerSteering=:powersteering,DriverAirbag=:driverairbag,PassengerAirbag=:passengerairbag,PowerWindows=:powerwindow,CDPlayer=:cdplayer,CentralLocking=:centrallocking,CrashSensor=:crashcensor,LeatherSeats=:leatherseats where id=:id";
+        // SQL Update
+        $sql="UPDATE tblvehicles SET VehiclesTitle=:vehicletitle,VehiclesBrand=:brand,VehiclesOverview=:vehicleoverview,PricePerDay=:priceperday,PricePerWeek=:priceperweek,PricePerMonth=:pricepermonth,SecurityDeposit=:securitydeposit,FuelType=:fueltype,Transmission=:transmission,VehicleType=:vehicletype,ModelYear=:modelyear,SeatingCapacity=:seatingcapacity,RoadTaxExpDate=:roadtaxexp,InsurancePolicyNo=:insurancepolicy,AirConditioner=:airconditioner,PowerDoorLocks=:powerdoorlocks,AntiLockBrakingSystem=:antilockbrakingsys,BrakeAssist=:brakeassist,PowerSteering=:powersteering,DriverAirbag=:driverairbag,PassengerAirbag=:passengerairbag,PowerWindows=:powerwindow,CDPlayer=:cdplayer,CentralLocking=:centrallocking,CrashSensor=:crashcensor,LeatherSeats=:leatherseats where id=:id";
         
         $query = $dbh->prepare($sql);
         $query->bindParam(':vehicletitle',$vehicletitle,PDO::PARAM_STR);
@@ -60,12 +58,14 @@ else
         $query->bindParam(':securitydeposit',$securitydeposit,PDO::PARAM_STR);
         $query->bindParam(':fueltype',$fueltype,PDO::PARAM_STR);
         $query->bindParam(':transmission',$transmission,PDO::PARAM_STR);
-        
-        // 🔥 Bind Vehicle Type
         $query->bindParam(':vehicletype',$vehicletype,PDO::PARAM_STR);
-
         $query->bindParam(':modelyear',$modelyear,PDO::PARAM_STR);
         $query->bindParam(':seatingcapacity',$seatingcapacity,PDO::PARAM_STR);
+        
+        // Bind New Malaysia Fields
+        $query->bindParam(':roadtaxexp',$roadtaxexp,PDO::PARAM_STR);
+        $query->bindParam(':insurancepolicy',$insurancepolicy,PDO::PARAM_STR);
+
         $query->bindParam(':airconditioner',$airconditioner,PDO::PARAM_STR);
         $query->bindParam(':powerdoorlocks',$powerdoorlocks,PDO::PARAM_STR);
         $query->bindParam(':antilockbrakingsys',$antilockbrakingsys,PDO::PARAM_STR);
@@ -84,7 +84,6 @@ else
         $msg="Data updated successfully";
     }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,6 +167,7 @@ else
                                         <option value="SUV">SUV</option>
                                         <option value="MPV">MPV</option>
                                         <option value="Coupe">Coupe</option>
+                                        <option value="Luxury">Luxury</option>
                                     </select>
                                 </div>
 
@@ -229,6 +229,23 @@ else
                 </div>
 
                 <div class="col-lg-4">
+                    
+                    <div class="card-custom">
+                        <div class="card-header-custom" style="background: #34495e;">
+                            <i class="fa fa-file-contract text-white"></i> Legal & Documentation
+                        </div>
+                        <div class="card-body-custom">
+                            <div class="mb-3">
+                                <label class="form-label text-danger">Road Tax Expiry Date</label>
+                                <input type="date" name="roadtaxexp" class="form-control" value="<?php echo htmlentities($result->RoadTaxExpDate);?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Insurance Policy No.</label>
+                                <input type="text" name="insurancepolicy" class="form-control" value="<?php echo htmlentities($result->InsurancePolicyNo);?>" required>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card-custom">
                         <div class="card-header-custom" style="background: #27ae60;"><i class="fa fa-money-bill-wave text-white"></i> Pricing</div>
                         <div class="card-body-custom">
